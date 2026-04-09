@@ -14,7 +14,6 @@
       --border: #2a3333;
       --accent: #00e5a0;
       --accent2: #ff6b35;
-      --accent3: #7b61ff;
       --text: #e8f0ee;
       --muted: #6b8080;
       --correct: #00c97a;
@@ -33,7 +32,6 @@
       overflow-x: hidden;
     }
 
-    /* Grid background */
     body::before {
       content: '';
       position: fixed;
@@ -47,21 +45,27 @@
     }
 
     .container {
-      max-width: 780px;
+      max-width: 820px;
       margin: 0 auto;
       padding: 40px 24px 80px;
       position: relative;
       z-index: 1;
     }
 
-    /* Header */
-    header {
-      margin-bottom: 56px;
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; animation: slideIn 0.35s ease; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* ── HEADER ── */
+    header { margin-bottom: 48px; }
 
     .tag {
       display: inline-block;
-      font-family: var(--mono);
       font-size: 11px;
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -77,55 +81,216 @@
       font-weight: 800;
       line-height: 1.05;
       letter-spacing: -0.02em;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
-    h1 span {
-      color: var(--accent);
-    }
+    h1 span { color: var(--accent); }
 
-    .subtitle {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
+    .subtitle { color: var(--muted); font-size: 13px; line-height: 1.6; }
 
-    /* Progress */
-    .progress-bar-wrap {
-      height: 3px;
-      background: var(--border);
-      margin-bottom: 48px;
-      position: relative;
-    }
+    /* ── GLOBAL PROGRESS ── */
+    .global-progress { margin-bottom: 40px; }
 
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--accent);
-      transition: width 0.4s ease;
-      box-shadow: 0 0 8px var(--accent);
-    }
-
-    .progress-label {
+    .global-progress-top {
+      display: flex;
+      justify-content: space-between;
       font-size: 11px;
       color: var(--muted);
       letter-spacing: 0.08em;
       margin-bottom: 8px;
     }
 
-    /* Quiz card */
-    .quiz-area { position: relative; }
+    .global-progress-bar-wrap {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
 
+    .global-progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.6s ease;
+      box-shadow: 0 0 10px rgba(0,229,160,0.35);
+    }
+
+    /* ── QUIZ GRID (home) ── */
+    .quiz-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    }
+
+    .quiz-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 28px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s, background 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quiz-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      background: rgba(0,229,160,0.04);
+    }
+
+    .quiz-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .quiz-card:hover::after { opacity: 1; }
+    .quiz-card.done::after { opacity: 1; background: var(--correct); }
+    .quiz-card.done { border-color: rgba(0,201,122,0.3); }
+
+    .qc-num {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .qc-title {
+      font-family: var(--display);
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .qc-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .qc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .qc-left { display: flex; flex-direction: column; gap: 5px; }
+
+    .score-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      letter-spacing: 0.04em;
+    }
+
+    .score-badge.todo { border: 1px solid var(--border); color: var(--muted); }
+    .score-badge.good { border: 1px solid var(--correct); color: var(--correct); background: rgba(0,201,122,0.1); }
+    .score-badge.low  { border: 1px solid var(--accent2); color: var(--accent2); background: rgba(255,107,53,0.1); }
+
+    .qc-count { font-size: 11px; color: var(--muted); }
+
+    .btn-card {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-card.start { background: var(--accent); color: var(--bg); }
+    .btn-card.replay { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+    .btn-card:hover { opacity: 0.82; }
+
+    /* reset scores link */
+    .reset-link {
+      display: block;
+      margin-top: 28px;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      text-align: right;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .reset-link:hover { color: var(--wrong); }
+
+    /* ── QUIZ VIEW header ── */
+    .quiz-nav {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .btn-back {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 7px 14px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-back:hover { border-color: var(--text); color: var(--text); }
+
+    .quiz-nav-title {
+      font-family: var(--display);
+      font-size: 0.95rem;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* progress bar */
+    .prog-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .prog-bar-wrap {
+      height: 3px;
+      background: var(--border);
+      margin-bottom: 32px;
+    }
+
+    .prog-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.4s ease;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* ── QUESTION ── */
     .question-card {
       background: var(--surface);
       border: 1px solid var(--border);
       padding: 36px;
       margin-bottom: 20px;
       animation: slideIn 0.35s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
 
     .q-number {
@@ -138,10 +303,10 @@
 
     .q-text {
       font-family: var(--display);
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 8px;
+      line-height: 1.45;
+      margin-bottom: 6px;
     }
 
     .q-image {
@@ -152,19 +317,9 @@
       display: block;
     }
 
-    .q-hint {
-      font-size: 12px;
-      color: var(--muted);
-      font-style: italic;
-      margin-top: 6px;
-    }
+    .q-hint { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 6px; }
 
-    /* Choices */
-    .choices {
-      display: grid;
-      gap: 10px;
-      margin-top: 28px;
-    }
+    .choices { display: grid; gap: 10px; margin-top: 28px; }
 
     .choice-btn {
       background: var(--surface2);
@@ -188,30 +343,13 @@
       transform: translateX(4px);
     }
 
-    .choice-btn .choice-letter {
-      font-weight: 700;
-      color: var(--accent);
-      min-width: 18px;
-      flex-shrink: 0;
-    }
-
-    .choice-btn.correct {
-      border-color: var(--correct);
-      background: rgba(0,201,122,0.12);
-    }
-
-    .choice-btn.correct .choice-letter { color: var(--correct); }
-
-    .choice-btn.wrong {
-      border-color: var(--wrong);
-      background: rgba(255,71,87,0.1);
-    }
-
-    .choice-btn.wrong .choice-letter { color: var(--wrong); }
-
+    .choice-btn .cl { font-weight: 700; color: var(--accent); min-width: 18px; flex-shrink: 0; }
+    .choice-btn.correct { border-color: var(--correct); background: rgba(0,201,122,0.12); }
+    .choice-btn.correct .cl { color: var(--correct); }
+    .choice-btn.wrong { border-color: var(--wrong); background: rgba(255,71,87,0.1); }
+    .choice-btn.wrong .cl { color: var(--wrong); }
     .choice-btn:disabled { cursor: default; }
 
-    /* Code blocks in questions */
     code {
       font-family: var(--mono);
       background: var(--bg);
@@ -221,19 +359,6 @@
       color: var(--accent2);
     }
 
-    pre {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
-      padding: 14px 18px;
-      margin: 16px 0;
-      font-size: 13px;
-      color: var(--accent2);
-      overflow-x: auto;
-      line-height: 1.7;
-    }
-
-    /* Feedback */
     .feedback {
       padding: 16px 20px;
       border-left: 3px solid;
@@ -243,19 +368,9 @@
       animation: slideIn 0.25s ease;
     }
 
-    .feedback.ok {
-      border-color: var(--correct);
-      background: rgba(0,201,122,0.08);
-      color: var(--correct);
-    }
+    .feedback.ok { border-color: var(--correct); background: rgba(0,201,122,0.08); color: var(--correct); }
+    .feedback.ko { border-color: var(--wrong); background: rgba(255,71,87,0.08); color: #ff8a96; }
 
-    .feedback.ko {
-      border-color: var(--wrong);
-      background: rgba(255,71,87,0.08);
-      color: #ff8a96;
-    }
-
-    /* Nav button */
     .btn-next {
       margin-top: 28px;
       background: var(--accent);
@@ -272,10 +387,8 @@
     }
 
     .btn-next:hover { opacity: 0.85; transform: translateY(-1px); }
-    .btn-next:active { transform: translateY(0); }
-    .btn-next:disabled { opacity: 0.3; cursor: default; transform: none; }
 
-    /* Score screen */
+    /* ── SCORE SCREEN ── */
     .score-screen {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -286,75 +399,69 @@
 
     .score-big {
       font-family: var(--display);
-      font-size: clamp(3rem, 10vw, 5.5rem);
+      font-size: clamp(3rem, 10vw, 5rem);
       font-weight: 800;
       line-height: 1;
       color: var(--accent);
       margin-bottom: 8px;
     }
 
-    .score-label {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 32px;
-      letter-spacing: 0.05em;
-    }
+    .score-big.low { color: var(--accent2); }
+    .score-label { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
 
     .score-msg {
       font-family: var(--display);
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      margin-bottom: 36px;
+      margin-bottom: 32px;
     }
 
     .score-details {
       display: flex;
       justify-content: center;
       gap: 32px;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
     }
 
-    .score-stat {
-      text-align: center;
-    }
+    .score-stat .val { display: block; font-size: 1.5rem; font-weight: 700; font-family: var(--display); }
+    .score-stat .lbl { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
 
-    .score-stat .val {
-      display: block;
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--text);
-      font-family: var(--display);
-    }
+    .score-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-    .score-stat .lbl {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    .btn-restart {
+    .btn-secondary {
       background: transparent;
       border: 1px solid var(--accent);
       color: var(--accent);
       font-family: var(--mono);
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 13px 28px;
+      padding: 13px 22px;
       cursor: pointer;
       transition: background 0.15s;
     }
 
-    .btn-restart:hover {
-      background: rgba(0,229,160,0.1);
+    .btn-secondary:hover { background: rgba(0,229,160,0.1); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 13px 22px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
     }
 
-    /* Hidden */
-    .hidden { display: none; }
+    .btn-primary:hover { opacity: 0.85; }
 
-    /* Scrollbar */
+    .hidden { display: none !important; }
+
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -363,340 +470,527 @@
 <body>
 <div class="container">
 
-  <header>
-    <div class="tag">Formation interne</div>
-    <h1>Quiz<br><span>Git</span></h1>
-    <p class="subtitle">Testez vos connaissances sur les bases de Git.</p>
-  </header>
+  <!-- ══════════════════════════════
+       HOME VIEW
+  ══════════════════════════════ -->
+  <div id="view-home" class="view active">
+    <header>
+      <div class="tag">Formation interne</div>
+      <h1>Quiz<br><span>Git</span></h1>
+      <p class="subtitle">Sélectionnez un module pour tester vos connaissances.</p>
+    </header>
 
-  <div id="quiz-root">
-    <!-- Progress -->
-    <div id="progress-wrap">
-      <div class="progress-label" id="progress-label">Question 1 / ?</div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+    <div class="global-progress">
+      <div class="global-progress-top">
+        <span>Progression globale</span>
+        <span id="global-count">—</span>
+      </div>
+      <div class="global-progress-bar-wrap">
+        <div class="global-progress-bar-fill" id="global-bar" style="width:0%"></div>
       </div>
     </div>
 
-    <!-- Question -->
-    <div class="quiz-area" id="quiz-area"></div>
+    <div class="quiz-grid" id="quiz-grid"></div>
+    <span class="reset-link" onclick="resetScores()">Réinitialiser tous les scores</span>
+  </div>
 
-    <!-- Score -->
+  <!-- ══════════════════════════════
+       QUIZ VIEW
+  ══════════════════════════════ -->
+  <div id="view-quiz" class="view">
+    <div class="quiz-nav">
+      <button class="btn-back" onclick="goHome()">← Accueil</button>
+      <div class="quiz-nav-title" id="quiz-nav-title"></div>
+    </div>
+
+    <div class="prog-label" id="prog-label"></div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-fill" id="prog-bar" style="width:0%"></div>
+    </div>
+
+    <div id="quiz-area"></div>
+
     <div class="score-screen hidden" id="score-screen">
       <div class="score-big" id="score-pct">—</div>
       <div class="score-label">de bonnes réponses</div>
       <div class="score-msg" id="score-msg">—</div>
       <div class="score-details">
         <div class="score-stat">
-          <span class="val" id="score-correct">—</span>
+          <span class="val" id="s-correct">—</span>
           <span class="lbl">Correctes</span>
         </div>
         <div class="score-stat">
-          <span class="val" id="score-wrong">—</span>
+          <span class="val" id="s-wrong">—</span>
           <span class="lbl">Incorrectes</span>
         </div>
         <div class="score-stat">
-          <span class="val" id="score-total">—</span>
+          <span class="val" id="s-total">—</span>
           <span class="lbl">Total</span>
         </div>
       </div>
-      <button class="btn-restart" onclick="startQuiz()">↺ Recommencer</button>
+      <div class="score-actions">
+        <button class="btn-secondary" onclick="restartCurrent()">↺ Recommencer</button>
+        <button class="btn-primary" onclick="goHome()">← Retour accueil</button>
+      </div>
     </div>
   </div>
 
 </div>
-
 <script>
-/* =====================================================================
-   QUESTIONS — MODIFIEZ / AJOUTEZ ICI
-   
-   Structure d'une question :
+/* ===================================================================
+   CONFIGURATION DES QUIZ
+   ─────────────────────────────────────────────────────────────────
+   Chaque entrée dans QUIZZES est un quiz complet.
+
    {
-     q: "Texte de la question (HTML autorisé)",
-     image: "chemin/vers/image.png",   // OPTIONNEL
-     hint: "Sous-titre / indice",       // OPTIONNEL
-     choices: ["Réponse A", "Réponse B", "Réponse C", "Réponse D"],
-     answer: 0,   // index (0-based) de la bonne réponse
-     explain: "Explication affichée après la réponse"
+     id:    "identifiant-unique",     ← utilisé pour sauvegarder le score
+     title: "Titre de la carte",
+     desc:  "Courte description",
+     questions: [
+       {
+         q:       "Texte HTML de la question",
+         image:   "images/mon-schema.png",   // OPTIONNEL
+         hint:    "Indice affiché en gris",  // OPTIONNEL
+         choices: ["Réponse A", "Réponse B", "Réponse C", "Réponse D"],
+         answer:  0,                         // index 0-based de la bonne réponse
+         explain: "Explication après réponse (HTML autorisé)"
+       },
+       ...
+     ]
    }
-===================================================================== */
-const QUESTIONS = [
+=================================================================== */
+const QUIZZES = [
+  /* ── QUIZ 1 ─────────────────────────────────────────────── */
   {
-    q: "Qu'est-ce que Git ?",
-    choices: [
-      "Un hébergeur de code en ligne comme GitHub ou GitLab",
-      "Un système de contrôle de version local qui suit l'historique de vos fichiers",
-      "Un éditeur de texte pour développeurs",
-      "Un langage de programmation orienté objet"
-    ],
-    answer: 1,
-    explain: "Git est un outil <em>local</em> de gestion de versions. Il suit et gère l'évolution de vos fichiers au fil du temps. GitHub, Gitea, etc. sont des plateformes distantes distinctes."
+    id: "git-intro",
+    title: "Quiz 1 — Introduction à Git",
+    desc: "Qu'est-ce que Git, les 3 zones, notions fondamentales.",
+    questions: [
+      {
+        q: "Qu'est-ce que Git ?",
+        choices: [
+          "Un hébergeur de code en ligne comme GitHub ou GitLab",
+          "Un système de contrôle de version local qui suit l'historique de vos fichiers",
+          "Un éditeur de texte pour développeurs",
+          "Un langage de programmation orienté objet"
+        ],
+        answer: 1,
+        explain: "Git est un outil <em>local</em> de gestion de versions. Il suit et gère l'évolution de vos fichiers au fil du temps. GitHub, Gitea, etc. sont des plateformes distantes distinctes."
+      },
+      {
+        q: "Que représente un <strong>commit</strong> dans Git ?",
+        choices: [
+          "Une sauvegarde automatique toutes les 5 minutes",
+          "Une étape dans l'historique du projet, identifiée par un message",
+          "L'envoi du code vers le serveur distant",
+          "La fusion de deux branches"
+        ],
+        answer: 1,
+        explain: "Un commit est un instantané de l'état de votre projet à un moment donné. Il est identifié par un hash unique et un message descriptif, et fait partie de l'historique permanent."
+      },
+      {
+        q: "Quels sont les 3 états (zones) dans lesquels peut se trouver un fichier dans Git ?",
+        choices: [
+          "Local, Remote, Cloud",
+          "Draft, Review, Published",
+          "Working directory, Staging area, Repository",
+          "Modified, Compiled, Deployed"
+        ],
+        answer: 2,
+        explain: "Les 3 zones de Git : le <strong>Working directory</strong> (espace de travail), la <strong>Staging area / Index</strong> (zone de préparation) et le <strong>Repository</strong> (dépôt local ou distant)."
+      },
+      {
+        q: "À quoi sert la <strong>Staging Area</strong> (Index) ?",
+        choices: [
+          "À stocker les commits envoyés vers le serveur distant",
+          "À sélectionner précisément les fichiers qu'on veut inclure dans le prochain commit",
+          "À afficher l'historique des modifications",
+          "À sauvegarder automatiquement le projet"
+        ],
+        answer: 1,
+        explain: "La Staging Area permet de préparer son commit avec précision : on choisit fichier par fichier ce qui sera enregistré, et on peut réviser avant de valider."
+      },
+      {
+        q: "Parmi ces noms de fichiers, lequel illustre le problème que Git est censé résoudre ?",
+        choices: [
+          "<code>README.md</code>",
+          "<code>script.sh</code>",
+          "<code>mon_script_v2_final_pour_de_vrai_final.sh</code>",
+          "<code>.gitignore</code>"
+        ],
+        answer: 2,
+        explain: "Git évite la prolifération de fichiers comme <em>v2_final_vraiment_final</em>. Avec Git, une seule version du fichier existe ; tout l'historique est accessible via les commits."
+      },
+      {
+        q: "Que garantit le <strong>hash unique</strong> associé à chaque commit ?",
+        choices: [
+          "Que le commit a bien été envoyé sur le serveur distant",
+          "Que le message du commit est correctement formaté",
+          "L'intégrité et la traçabilité : chaque commit est identifié de façon cryptographiquement unique",
+          "Que le commit a été relu et approuvé par un collègue"
+        ],
+        answer: 2,
+        explain: "Chaque commit est identifié par un hash SHA-1 unique. Cela garantit l'intégrité des données : toute modification, même minime, produirait un hash différent."
+      }
+    ]
   },
+
+  /* ── QUIZ 2 ─────────────────────────────────────────────── */
   {
-    q: "Quelle commande permet d'ajouter <em>tous</em> les fichiers modifiés du projet à l'index ?",
-    choices: [
-      "<code>git commit -a</code>",
-      "<code>git add .</code>",
-      "<code>git add -A</code>",
-      "<code>git push --all</code>"
-    ],
-    answer: 2,
-    explain: "<code>git add -A</code> (ou <code>--all</code>) ajoute tous les fichiers modifiés, ajoutés ou supprimés du projet entier à la staging area. <code>git add .</code> fait de même mais uniquement pour le répertoire courant et ses enfants."
+    id: "git-commandes",
+    title: "Quiz 2 — Commandes du quotidien",
+    desc: "add, commit, push, pull et le workflow standard.",
+    questions: [
+      {
+        q: "Quelle commande permet d'ajouter <em>tous</em> les fichiers modifiés du projet à l'index ?",
+        choices: [
+          "<code>git commit -a</code>",
+          "<code>git add .</code>",
+          "<code>git add -A</code>",
+          "<code>git push --all</code>"
+        ],
+        answer: 2,
+        explain: "<code>git add -A</code> (ou <code>--all</code>) ajoute tous les fichiers modifiés, ajoutés ou supprimés du projet entier. <code>git add .</code> fait de même mais uniquement pour le répertoire courant."
+      },
+      {
+        q: "Quelle commande permet d'écrire le message de commit <em>directement</em> sans ouvrir un éditeur ?",
+        choices: [
+          "<code>git commit --no-edit</code>",
+          "<code>git commit --message</code>",
+          "<code>git commit -m \"message\"</code>",
+          "<code>git commit -e \"message\"</code>"
+        ],
+        answer: 2,
+        explain: "L'option <code>-m</code> permet d'écrire le message directement en ligne de commande. Sans cette option, Git ouvre vim ou nano."
+      },
+      {
+        q: "Que fait <code>git push</code> ?",
+        choices: [
+          "Télécharge les derniers commits du dépôt distant vers le dépôt local",
+          "Fusionne deux branches locales",
+          "Envoie les commits locaux vers le dépôt distant",
+          "Crée un nouveau dépôt distant"
+        ],
+        answer: 2,
+        explain: "<code>git push</code> synchronise le dépôt local vers le dépôt distant : il envoie les commits locaux qui n'ont pas encore été partagés."
+      },
+      {
+        q: "Que fait <code>git pull</code> ?",
+        choices: [
+          "Envoie vos commits locaux sur le serveur",
+          "Télécharge et intègre les commits distants dans votre dépôt local",
+          "Crée une nouvelle branche à partir de la branche distante",
+          "Supprime les commits locaux non partagés"
+        ],
+        answer: 1,
+        explain: "<code>git pull</code> récupère les commits du dépôt distant et les intègre dans votre dépôt local. À faire avant chaque push pour éviter les conflits."
+      },
+      {
+        q: "Dans quel ordre doit-on idéalement effectuer ces actions avant d'envoyer son travail ?",
+        choices: [
+          "push → pull → commit → add",
+          "add → commit → pull → push",
+          "commit → add → push → pull",
+          "pull → add → push → commit"
+        ],
+        answer: 1,
+        explain: "Le flux standard est : <strong>add</strong> → <strong>commit</strong> → <strong>pull</strong> (récupérer les changements distants) → <strong>push</strong>. Le pull avant push évite les conflits."
+      },
+      {
+        q: "Quel est le prérequis pour pouvoir exécuter <code>git commit</code> ?",
+        choices: [
+          "Être connecté à Internet",
+          "Avoir au moins un fichier dans la staging area (index)",
+          "Avoir configuré un dépôt distant",
+          "Avoir créé une branche dédiée"
+        ],
+        answer: 1,
+        explain: "Pour commiter, il faut avoir au moins un fichier dans l'index (ajouté via <code>git add</code>). Sans cela, Git affiche une erreur indiquant qu'il n'y a rien à commiter."
+      }
+    ]
   },
+
+  /* ── QUIZ 3 ─────────────────────────────────────────────── */
   {
-    q: "Que représente un <strong>commit</strong> dans Git ?",
-    choices: [
-      "Une sauvegarde automatique toutes les 5 minutes",
-      "Une étape dans l'historique du projet, identifiée par un message",
-      "L'envoi du code vers le serveur distant",
-      "La fusion de deux branches"
-    ],
-    answer: 1,
-    explain: "Un commit est un instantané de l'état de votre projet à un moment donné. Il est identifié par un hash unique et un message descriptif, et fait partie de l'historique permanent."
+    id: "git-demarrer",
+    title: "Quiz 3 — Démarrer un projet",
+    desc: "git init, git clone, lier un dépôt distant.",
+    questions: [
+      {
+        q: "Quelle commande initialise un nouveau dépôt Git dans le dossier courant ?",
+        choices: [
+          "<code>git start</code>",
+          "<code>git create</code>",
+          "<code>git new</code>",
+          "<code>git init</code>"
+        ],
+        answer: 3,
+        explain: "<code>git init</code> crée un nouveau dépôt Git local dans le répertoire courant (crée un dossier caché <code>.git</code>)."
+      },
+      {
+        q: "Comment récupérer une copie complète d'un projet Git existant hébergé à distance ?",
+        choices: [
+          "<code>git pull https://gitea.example.com/org/repo.git</code>",
+          "<code>git fetch https://gitea.example.com/org/repo.git</code>",
+          "<code>git clone https://gitea.example.com/org/repo.git</code>",
+          "<code>git init https://gitea.example.com/org/repo.git</code>"
+        ],
+        answer: 2,
+        explain: "<code>git clone &lt;url&gt;</code> crée une copie locale complète du dépôt distant, avec tout l'historique. C'est la commande de départ pour travailler sur un projet existant."
+      },
+      {
+        q: "Quelle commande lie un dépôt local à un dépôt distant appelé <code>origin</code> ?",
+        choices: [
+          "<code>git link origin &lt;url&gt;</code>",
+          "<code>git remote add origin &lt;url&gt;</code>",
+          "<code>git push origin &lt;url&gt;</code>",
+          "<code>git connect --remote origin &lt;url&gt;</code>"
+        ],
+        answer: 1,
+        explain: "<code>git remote add origin &lt;url&gt;</code> enregistre l'URL du dépôt distant sous le nom <code>origin</code>. On envoie ensuite avec <code>git push -u origin main</code>."
+      },
+      {
+        q: "Quelle est la différence entre <code>git init</code> et <code>git clone</code> ?",
+        choices: [
+          "Aucune, les deux font la même chose",
+          "<code>git init</code> est pour un nouveau projet local, <code>git clone</code> pour récupérer un projet existant",
+          "<code>git clone</code> crée un projet vide, <code>git init</code> copie un projet existant",
+          "<code>git init</code> nécessite une connexion Internet"
+        ],
+        answer: 1,
+        explain: "<code>git init</code> crée un nouveau dépôt vide localement. <code>git clone</code> copie un dépôt distant existant (avec tout son historique) en local."
+      },
+      {
+        q: "Après <code>git init</code> et les premiers commits, quelle commande envoie le projet sur le dépôt distant pour la première fois ?",
+        choices: [
+          "<code>git push</code>",
+          "<code>git push origin</code>",
+          "<code>git push -u origin main</code>",
+          "<code>git remote push main</code>"
+        ],
+        answer: 2,
+        explain: "<code>git push -u origin main</code> envoie la branche <code>main</code> vers <code>origin</code> et définit le suivi (upstream), ce qui permet ensuite d'utiliser simplement <code>git push</code>."
+      }
+    ]
   },
+
+  /* ── QUIZ 4 — À COMPLÉTER ────────────────────────────────── */
   {
-    q: "Quels sont les 3 états (zones) dans lesquels peut se trouver un fichier dans Git ?",
-    choices: [
-      "Local, Remote, Cloud",
-      "Draft, Review, Published",
-      "Working directory, Staging area, Repository",
-      "Modified, Compiled, Deployed"
-    ],
-    answer: 2,
-    explain: "Les 3 zones de Git sont : le <strong>Working directory</strong> (votre espace de travail), la <strong>Staging area / Index</strong> (zone de préparation) et le <strong>Repository</strong> (dépôt, local ou distant)."
-  },
-  {
-    q: "À quoi sert la <strong>Staging Area</strong> (Index) ?",
-    choices: [
-      "À stocker les commits envoyés vers le serveur distant",
-      "À sélectionner précisément les fichiers qu'on veut inclure dans le prochain commit",
-      "À afficher l'historique des modifications",
-      "À sauvegarder automatiquement le projet"
-    ],
-    answer: 1,
-    explain: "La Staging Area permet de préparer son commit avec précision : on choisit fichier par fichier ce qui sera enregistré, et on peut réviser avant de valider."
-  },
-  {
-    q: "Quelle commande permet d'écrire le message de commit <em>directement</em> sans ouvrir un éditeur ?",
-    choices: [
-      "<code>git commit --no-edit</code>",
-      "<code>git commit --message</code>",
-      "<code>git commit -m \"message\"</code>",
-      "<code>git commit -e \"message\"</code>"
-    ],
-    answer: 2,
-    explain: "L'option <code>-m</code> permet d'écrire le message directement en ligne de commande : <code>git commit -m \"fixing bug\"</code>. Sans cette option, Git ouvre vim ou nano."
-  },
-  {
-    q: "Que fait <code>git push</code> ?",
-    choices: [
-      "Télécharge les derniers commits du dépôt distant vers le dépôt local",
-      "Fusionne deux branches locales",
-      "Envoie les commits locaux vers le dépôt distant",
-      "Crée un nouveau dépôt distant"
-    ],
-    answer: 2,
-    explain: "<code>git push</code> synchronise le dépôt local vers le dépôt distant : il envoie les commits locaux qui n'ont pas encore été partagés."
-  },
-  {
-    q: "Dans quel ordre doit-on idéalement effectuer ces actions avant d'envoyer son travail ?",
-    choices: [
-      "push → pull → commit → add",
-      "add → commit → pull → push",
-      "commit → add → push → pull",
-      "pull → add → push → commit"
-    ],
-    answer: 1,
-    explain: "Le flux standard est : <strong>add</strong> (préparer les fichiers) → <strong>commit</strong> (enregistrer) → <strong>pull</strong> (récupérer les changements distants) → <strong>push</strong> (envoyer). On fait le pull avant le push pour éviter les conflits."
-  },
-  {
-    q: "Quelle commande initialise un nouveau dépôt Git dans le dossier courant ?",
-    choices: [
-      "<code>git start</code>",
-      "<code>git create</code>",
-      "<code>git new</code>",
-      "<code>git init</code>"
-    ],
-    answer: 3,
-    explain: "<code>git init</code> crée un nouveau dépôt Git local dans le répertoire courant (crée un dossier caché <code>.git</code>)."
-  },
-  {
-    q: "Comment récupérer une copie complète d'un projet Git existant hébergé à distance ?",
-    choices: [
-      "<code>git pull https://gitea.example.com/org/repo.git</code>",
-      "<code>git fetch https://gitea.example.com/org/repo.git</code>",
-      "<code>git clone https://gitea.example.com/org/repo.git</code>",
-      "<code>git init https://gitea.example.com/org/repo.git</code>"
-    ],
-    answer: 2,
-    explain: "<code>git clone &lt;url&gt;</code> crée une copie locale complète du dépôt distant, avec tout l'historique. C'est la commande de départ pour travailler sur un projet existant."
-  },
-  {
-    q: "Quelle commande lie un dépôt local à un dépôt distant appelé <code>origin</code> ?",
-    choices: [
-      "<code>git link origin &lt;url&gt;</code>",
-      "<code>git remote add origin &lt;url&gt;</code>",
-      "<code>git push origin &lt;url&gt;</code>",
-      "<code>git connect --remote origin &lt;url&gt;</code>"
-    ],
-    answer: 1,
-    explain: "<code>git remote add origin &lt;url&gt;</code> enregistre l'URL du dépôt distant sous le nom <code>origin</code> (convention standard). On envoie ensuite avec <code>git push -u origin main</code>."
-  },
-  {
-    q: "Parmi ces noms de fichiers, lequel illustre le problème que Git est censé résoudre ?",
-    choices: [
-      "<code>README.md</code>",
-      "<code>script.sh</code>",
-      "<code>mon_script_v2_final_pour_de_vrai_final.sh</code>",
-      "<code>.gitignore</code>"
-    ],
-    answer: 2,
-    explain: "Git évite la prolifération de fichiers comme <em>v2_final_vraiment_final</em>. Avec Git, une seule version du fichier existe, et tout l'historique des modifications est accessible via les commits."
-  },
-  {
-    q: "Quel est le prérequis pour pouvoir exécuter <code>git commit</code> ?",
-    choices: [
-      "Être connecté à Internet",
-      "Avoir au moins un fichier dans la staging area (index)",
-      "Avoir configuré un dépôt distant",
-      "Avoir créé une branche dédiée"
-    ],
-    answer: 1,
-    explain: "Pour commiter, il faut avoir au moins un fichier dans l'index (ajouté via <code>git add</code>). Sans cela, Git affiche une erreur indiquant qu'il n'y a rien à commiter."
-  },
-  {
-    q: "Que garantit le <strong>hash unique</strong> associé à chaque commit ?",
-    choices: [
-      "Que le commit a bien été envoyé sur le serveur distant",
-      "Que le message du commit est correctement formaté",
-      "L'intégrité et la traçabilité : chaque commit est identifié de façon cryptographiquement unique",
-      "Que le commit a été relu et approuvé par un collègue"
-    ],
-    answer: 2,
-    explain: "Chaque commit est identifié par un hash SHA-1 unique. Cela garantit l'intégrité des données : toute modification, même minime, produirait un hash différent. On peut ainsi remonter à n'importe quel point de l'historique."
+    id: "git-branches",
+    title: "Quiz 4 — Branches & Merges",
+    desc: "Créer des branches, fusionner, résoudre des conflits.",
+    questions: [
+      {
+        q: "Quelle commande crée une nouvelle branche <em>et</em> se positionne dessus immédiatement ?",
+        choices: [
+          "<code>git branch ma-branche</code>",
+          "<code>git checkout ma-branche</code>",
+          "<code>git checkout -b ma-branche</code>",
+          "<code>git merge ma-branche</code>"
+        ],
+        answer: 2,
+        explain: "<code>git checkout -b ma-branche</code> crée la branche et s'y positionne en une seule commande. Depuis Git 2.23 on peut aussi utiliser <code>git switch -c ma-branche</code>."
+      },
+      {
+        q: "Sur quelle branche doit-on se trouver pour fusionner <code>feature</code> dans <code>main</code> ?",
+        choices: [
+          "Sur la branche <code>feature</code>",
+          "Sur la branche <code>main</code>",
+          "Peu importe, Git détecte automatiquement",
+          "Sur une nouvelle branche <code>merge-branch</code>"
+        ],
+        answer: 1,
+        explain: "Pour fusionner <code>feature</code> dans <code>main</code>, il faut d'abord se positionner sur <code>main</code> (<code>git checkout main</code>), puis exécuter <code>git merge feature</code>."
+      },
+      {
+        q: "Qu'est-ce qu'un conflit de merge dans Git ?",
+        choices: [
+          "Une erreur réseau lors d'un push",
+          "Deux commits avec le même message",
+          "Des modifications incompatibles sur les mêmes lignes dans deux branches différentes",
+          "Un push refusé par le serveur distant"
+        ],
+        answer: 2,
+        explain: "Un conflit survient quand deux branches ont modifié les mêmes lignes d'un fichier de façon différente. Git ne peut pas décider automatiquement quelle version garder : il faut le résoudre manuellement."
+      }
+    ]
   }
 ];
 
-/* =====================================================================
-   LOGIQUE DU QUIZ — ne pas modifier sauf si vous savez ce que vous faites
-===================================================================== */
+/* ===================================================================
+   MOTEUR DU QUIZ — ne pas modifier sauf si vous savez ce que vous faites
+=================================================================== */
 
-let current = 0;
-let score = 0;
-let answered = false;
+const STORE = 'git-quiz-scores-v2';
 
-function startQuiz() {
-  current = 0;
-  score = 0;
-  answered = false;
-  document.getElementById('score-screen').classList.add('hidden');
-  document.getElementById('progress-wrap').classList.remove('hidden');
-  document.getElementById('quiz-area').classList.remove('hidden');
-  renderQuestion();
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(STORE)) || {}; }
+  catch { return {}; }
 }
 
-function renderQuestion() {
-  answered = false;
-  const q = QUESTIONS[current];
-  const total = QUESTIONS.length;
-  const pct = Math.round((current / total) * 100);
-
-  document.getElementById('progress-label').textContent = `Question ${current + 1} / ${total}`;
-  document.getElementById('progress-bar').style.width = pct + '%';
-
-  const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-
-  const imageHTML = q.image
-    ? `<img class="q-image" src="${q.image}" alt="Illustration de la question" />`
-    : '';
-
-  const hintHTML = q.hint
-    ? `<p class="q-hint">${q.hint}</p>`
-    : '';
-
-  const choicesHTML = q.choices.map((c, i) => `
-    <button class="choice-btn" onclick="selectAnswer(${i})" id="choice-${i}">
-      <span class="choice-letter">${letters[i]}</span>
-      <span>${c}</span>
-    </button>
-  `).join('');
-
-  document.getElementById('quiz-area').innerHTML = `
-    <div class="question-card">
-      <div class="q-number">Question ${current + 1}</div>
-      <div class="q-text">${q.q}</div>
-      ${hintHTML}
-      ${imageHTML}
-      <div class="choices">${choicesHTML}</div>
-    </div>
-    <div id="feedback-area"></div>
-    <button class="btn-next hidden" id="btn-next" onclick="nextQuestion()">
-      ${current + 1 < total ? 'Question suivante →' : 'Voir les résultats →'}
-    </button>
-  `;
+function saveScore(id, correct, total) {
+  const s = loadScores();
+  s[id] = { correct, total, pct: Math.round(correct / total * 100) };
+  localStorage.setItem(STORE, JSON.stringify(s));
 }
 
-function selectAnswer(idx) {
-  if (answered) return;
-  answered = true;
-
-  const q = QUESTIONS[current];
-  const isCorrect = idx === q.answer;
-  if (isCorrect) score++;
-
-  // Highlight choices
-  q.choices.forEach((_, i) => {
-    const btn = document.getElementById('choice-' + i);
-    btn.disabled = true;
-    if (i === q.answer) btn.classList.add('correct');
-    else if (i === idx) btn.classList.add('wrong');
-  });
-
-  // Feedback
-  const fb = document.getElementById('feedback-area');
-  fb.innerHTML = `
-    <div class="feedback ${isCorrect ? 'ok' : 'ko'}">
-      ${isCorrect ? '✓ Correct !' : '✗ Pas tout à fait.'}&nbsp;&nbsp;${q.explain}
-    </div>
-  `;
-
-  document.getElementById('btn-next').classList.remove('hidden');
-}
-
-function nextQuestion() {
-  current++;
-  if (current >= QUESTIONS.length) {
-    showScore();
-  } else {
-    renderQuestion();
+function resetScores() {
+  if (confirm('Effacer tous les scores enregistrés ?')) {
+    localStorage.removeItem(STORE);
+    renderHome();
   }
 }
 
-function showScore() {
-  document.getElementById('quiz-area').innerHTML = '';
-  document.getElementById('progress-wrap').classList.add('hidden');
+/* ─── HOME ─── */
+function renderHome() {
+  showView('view-home');
+  const scores = loadScores();
+  const done = QUIZZES.filter(q => scores[q.id]).length;
+  const total = QUIZZES.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
 
-  const total = QUESTIONS.length;
-  const pct = Math.round((score / total) * 100);
-  let msg = '';
-  if (pct >= 90) msg = 'Excellent ! Tu maîtrises Git 🎉';
-  else if (pct >= 70) msg = 'Bon travail, encore quelques révisions !';
-  else if (pct >= 50) msg = 'Pas mal, mais relis les slides 📖';
-  else msg = 'Courage, Git ça s\'apprend avec la pratique !';
+  document.getElementById('global-bar').style.width = pct + '%';
+  document.getElementById('global-count').textContent = `${done} / ${total} quiz complétés`;
 
-  document.getElementById('score-pct').textContent = pct + '%';
-  document.getElementById('score-msg').textContent = msg;
-  document.getElementById('score-correct').textContent = score;
-  document.getElementById('score-wrong').textContent = total - score;
-  document.getElementById('score-total').textContent = total;
-  document.getElementById('score-screen').classList.remove('hidden');
-  document.getElementById('progress-bar').style.width = '100%';
-  document.getElementById('progress-label').textContent = 'Terminé !';
-  document.getElementById('progress-wrap').classList.remove('hidden');
+  document.getElementById('quiz-grid').innerHTML = QUIZZES.map((quiz, i) => {
+    const sc = scores[quiz.id];
+    const isDone = !!sc;
+    const isLow = isDone && sc.pct < 70;
+
+    const badge = isDone
+      ? `<span class="score-badge ${isLow ? 'low' : 'good'}">${sc.pct}% &mdash; ${sc.correct}/${sc.total}</span>`
+      : `<span class="score-badge todo">Non commencé</span>`;
+
+    return `
+      <div class="quiz-card ${isDone ? 'done' : ''}" onclick="startQuiz('${quiz.id}')">
+        <div class="qc-num">Quiz ${i + 1}</div>
+        <div class="qc-title">${quiz.title}</div>
+        <div class="qc-desc">${quiz.desc}</div>
+        <div class="qc-footer">
+          <div class="qc-left">
+            ${badge}
+            <span class="qc-count">${quiz.questions.length} questions</span>
+          </div>
+          <button class="btn-card ${isDone ? 'replay' : 'start'}">
+            ${isDone ? '↺ Refaire' : 'Commencer →'}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-// Start
-startQuiz();
+/* ─── QUIZ ─── */
+let _quizId, _questions, _cur, _score, _answered;
+
+function startQuiz(id) {
+  const quiz = QUIZZES.find(q => q.id === id);
+  _quizId = id;
+  _questions = quiz.questions;
+  _cur = 0;
+  _score = 0;
+  _answered = false;
+  document.getElementById('quiz-nav-title').textContent = quiz.title;
+  document.getElementById('score-screen').classList.add('hidden');
+  document.getElementById('quiz-area').style.display = '';
+  showView('view-quiz');
+  renderQ();
+}
+
+function restartCurrent() { startQuiz(_quizId); }
+function goHome() { renderHome(); }
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function renderQ() {
+  _answered = false;
+  const q = _questions[_cur];
+  const total = _questions.length;
+  const pct = Math.round(_cur / total * 100);
+  const letters = ['A','B','C','D','E','F'];
+
+  document.getElementById('prog-label').textContent = `Question ${_cur + 1} / ${total}`;
+  document.getElementById('prog-bar').style.width = pct + '%';
+
+  const imageHTML = q.image ? `<img class="q-image" src="${q.image}" alt="Illustration">` : '';
+  const hintHTML  = q.hint  ? `<p class="q-hint">${q.hint}</p>` : '';
+
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Question ${_cur + 1}</div>
+      <div class="q-text">${q.q}</div>
+      ${hintHTML}${imageHTML}
+      <div class="choices">
+        ${q.choices.map((c,i) => `
+          <button class="choice-btn" id="c${i}" onclick="pick(${i})">
+            <span class="cl">${letters[i]}</span><span>${c}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div id="fb"></div>
+    <button class="btn-next hidden" id="btn-next" onclick="advance()">
+      ${_cur + 1 < total ? 'Question suivante →' : 'Voir les résultats →'}
+    </button>`;
+}
+
+function pick(idx) {
+  if (_answered) return;
+  _answered = true;
+  const q = _questions[_cur];
+  const ok = idx === q.answer;
+  if (ok) _score++;
+
+  q.choices.forEach((_, i) => {
+    const b = document.getElementById('c' + i);
+    b.disabled = true;
+    if (i === q.answer) b.classList.add('correct');
+    else if (i === idx) b.classList.add('wrong');
+  });
+
+  document.getElementById('fb').innerHTML = `
+    <div class="feedback ${ok ? 'ok' : 'ko'}">
+      ${ok ? '✓ Correct !' : '✗ Pas tout à fait.'}&nbsp; ${q.explain}
+    </div>`;
+  document.getElementById('btn-next').classList.remove('hidden');
+}
+
+function advance() {
+  _cur++;
+  if (_cur >= _questions.length) showScore();
+  else renderQ();
+}
+
+function showScore() {
+  const total = _questions.length;
+  const pct = Math.round(_score / total * 100);
+  saveScore(_quizId, _score, total);
+
+  const msgs = [
+    [90, 'Excellent ! Tu maîtrises ce chapitre 🎉'],
+    [70, 'Bon travail, encore quelques révisions !'],
+    [50, 'Pas mal, mais relis les slides 📖'],
+    [0,  "Courage, Git ça s'apprend avec la pratique !"]
+  ];
+
+  const msg = msgs.find(([t]) => pct >= t)[1];
+
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('prog-label').textContent = 'Terminé !';
+  document.getElementById('prog-bar').style.width = '100%';
+  document.getElementById('score-pct').textContent = pct + '%';
+  document.getElementById('score-pct').className = 'score-big' + (pct < 70 ? ' low' : '');
+  document.getElementById('score-msg').textContent = msg;
+  document.getElementById('s-correct').textContent = _score;
+  document.getElementById('s-wrong').textContent = total - _score;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('score-screen').classList.remove('hidden');
+}
+
+/* ─── INIT ─── */
+renderHome();
 </script>
 </body>
 </html>
