@@ -858,6 +858,19 @@ const QUIZZES = [
         explain: "git merge permet d'intégrer une branche dans la branche courante."
       },
       {
+        q: "J'aimerais merge ma branche feature dans main pour ajouter mes modification au projet. Que doit-je m'assurer d'avoir dans ce que me retourne la commande <code>git branch</code> pour être sûr que mon merge se passe bien comme je veux ?",
+        choices: [
+          "main"
+          "New branch feat/ma-feature created",
+          "*feat/ma-feature",
+          "*main",
+          "switch to branch feat/ma-feature",
+          "feat/ma-feature",
+        ],
+        answer: 3,
+        explain: "*main nous indique qu'on est bien dans la branche main, qui est bien celle dans laquelle on veut merge notre branche feature"
+      },
+      {
         q: "Quel type de branche correspond à une correction urgente en production ?",
         choices: [
           "feature/",
@@ -882,13 +895,29 @@ const QUIZZES = [
       {
         q: "Que faut-il faire après avoir résolu un conflit ?",
         choices: [
-          "Supprimer le dépôt",
           "Redémarrer Git",
+          "Prendre un café bien mérité",
           "Faire add, commit puis push",
+          "Se déplacer dans la branche initiale",
           "Créer une nouvelle branche"
         ],
         answer: 2,
         explain: "Après résolution : git status, git add, git commit, puis git push."
+      },
+      {
+        q: "En observant le schéma, quelle ont été les 5 dernières commandes git entrées ?",
+        image: "images/schema-branches.png",
+        choices: [
+          "<code>git switch release<br>git merge develop<br>git switch develop<br>git merge release<br>git merge main<br></code>",
+          
+          "<code>git push<br>git switch release<br>git merge main<br>git switch develop<br>git merge main</code>",
+          
+          "<code>git push<br>git switch main<br>git merge release<br>git switch develop<br>git merge release</code>",
+          
+          "Ho tu m'emerdes Erwan, moi je veux passer au TP"
+        ],
+        answer: 2,
+        explain: "Pas d'explication en particulier, faut juste prendre le temps de lire le schéma. Et t'inquiètes pas on passe bientôt aux TP."
       }
     ]
   }
