@@ -778,45 +778,121 @@ const QUIZZES = [
   {
     id: "git-branches",
     title: "Quiz 4 — Branches & Merges",
-    desc: "Créer des branches, fusionner, résoudre des conflits.",
+    desc: "Teste tes connaissances sur les branches et les merges Git",
     questions: [
       {
-        q: "Quelle commande crée une nouvelle branche <em>et</em> se positionne dessus immédiatement ?",
+        q: "Quel est le principal avantage d'utiliser des branches Git ?",
         choices: [
-          "<code>git branch ma-branche</code>",
-          "<code>git checkout ma-branche</code>",
-          "<code>git checkout -b ma-branche</code>",
-          "<code>git merge ma-branche</code>"
-        ],
-        answer: 2,
-        explain: "<code>git checkout -b ma-branche</code> crée la branche et s'y positionne en une seule commande. Depuis Git 2.23 on peut aussi utiliser <code>git switch -c ma-branche</code>."
-      },
-      {
-        q: "Sur quelle branche doit-on se trouver pour fusionner <code>feature</code> dans <code>main</code> ?",
-        choices: [
-          "Sur la branche <code>feature</code>",
-          "Sur la branche <code>main</code>",
-          "Peu importe, Git détecte automatiquement",
-          "Sur une nouvelle branche <code>merge-branch</code>"
+          "Accélérer les commits",
+          "Travailler sur différentes versions sans impacter le code principal",
+          "Supprimer automatiquement les bugs",
+          "Améliorer les performances du code"
         ],
         answer: 1,
-        explain: "Pour fusionner <code>feature</code> dans <code>main</code>, il faut d'abord se positionner sur <code>main</code> (<code>git checkout main</code>), puis exécuter <code>git merge feature</code>."
+        explain: "Les branches permettent de travailler en parallèle sans perturber la branche principale."
       },
       {
-        q: "Qu'est-ce qu'un conflit de merge dans Git ?",
+        q: "Dans l’analogie du roman, que représente la branche <code>main</code> ?",
         choices: [
-          "Une erreur réseau lors d'un push",
-          "Deux commits avec le même message",
-          "Des modifications incompatibles sur les mêmes lignes dans deux branches différentes",
-          "Un push refusé par le serveur distant"
+          "Une version brouillon",
+          "Une fin alternative",
+          "L’histoire officielle",
+          "Une sauvegarde automatique"
         ],
         answer: 2,
-        explain: "Un conflit survient quand deux branches ont modifié les mêmes lignes d'un fichier de façon différente. Git ne peut pas décider automatiquement quelle version garder : il faut le résoudre manuellement."
+        explain: "La branche main représente l’histoire officielle du projet."
+      },
+      {
+        q: "Pourquoi créer une branche pour une nouvelle fonctionnalité ?",
+        choices: [
+          "Pour supprimer le projet principal",
+          "Pour éviter de faire des commits",
+          "Pour isoler le développement sans casser le code stable",
+          "Pour accélérer Git"
+        ],
+        answer: 2,
+        explain: "Cela permet de développer sans impacter la version stable."
+      },
+      {
+        q: "Quelle commande permet de voir les branches existantes ?",
+        choices: [
+          "git status",
+          "git branch",
+          "git log",
+          "git show"
+        ],
+        answer: 1,
+        explain: "git branch liste les branches et indique la branche actuelle avec un *."
+      },
+      {
+        q: "Que fait la commande <code>git switch nom-branche</code> ?",
+        choices: [
+          "Supprime une branche",
+          "Fusionne une branche",
+          "Change de branche",
+          "Crée une branche"
+        ],
+        answer: 2,
+        explain: "git switch permet de se déplacer d’une branche à une autre."
+      },
+      {
+        q: "Pourquoi Git peut refuser un <code>git switch</code> ?",
+        choices: [
+          "La branche n'existe pas",
+          "Le réseau est lent",
+          "Des modifications non commit pourraient être écrasées",
+          "Le dépôt est vide"
+        ],
+        answer: 2,
+        explain: "Git protège vos modifications non commit pour éviter de les perdre."
+      },
+      {
+        q: "Quelle commande permet de fusionner une branche dans la branche actuelle ?",
+        choices: [
+          "git merge",
+          "git join",
+          "git combine",
+          "git attach"
+        ],
+        answer: 0,
+        explain: "git merge permet d'intégrer une branche dans la branche courante."
+      },
+      {
+        q: "Quel type de branche correspond à une correction urgente en production ?",
+        choices: [
+          "feature/",
+          "bugfix/",
+          "hotfix/",
+          "test/"
+        ],
+        answer: 2,
+        explain: "Les branches hotfix sont utilisées pour corriger rapidement en production."
+      },
+      {
+        q: "Que signifie le marqueur <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> lors d’un conflit ?",
+        choices: [
+          "Fin du conflit",
+          "Début de votre version",
+          "Début de la version distante",
+          "Erreur Git"
+        ],
+        answer: 1,
+        explain: "Ce marqueur indique le début de votre version dans un conflit."
+      },
+      {
+        q: "Que faut-il faire après avoir résolu un conflit ?",
+        choices: [
+          "Supprimer le dépôt",
+          "Redémarrer Git",
+          "Faire add, commit puis push",
+          "Créer une nouvelle branche"
+        ],
+        answer: 2,
+        explain: "Après résolution : git status, git add, git commit, puis git push."
       }
     ]
   }
 ];
-
 /* ===================================================================
    MOTEUR DU QUIZ — ne pas modifier sauf si vous savez ce que vous faites
 =================================================================== */
