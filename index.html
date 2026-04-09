@@ -836,15 +836,15 @@ const QUIZZES = [
         explain: "git switch permet de se déplacer d’une branche à une autre."
       },
       {
-        q: "Pourquoi Git peut refuser un <code>git switch</code> ?",
+        q: "Pourquoi Git peut refuser un <code>git switch</code> même si la branche existe ?",
         choices: [
-          "La branche n'existe pas",
           "Le réseau est lent",
           "Des modifications non commit pourraient être écrasées",
-          "Le dépôt est vide"
+          "Le dépôt est vide",
+          "Le commit précédent est invalide"
         ],
-        answer: 2,
-        explain: "Git protège vos modifications non commit pour éviter de les perdre."
+        answer: 1,
+        explain: "Git refuse de changer de branche si des modifications non commit risquent d’être écrasées, afin de protéger votre travail."
       },
       {
         q: "Quelle commande permet de fusionner une branche dans la branche actuelle ?",
