@@ -180,7 +180,7 @@
             break;
     
           case 'reveal':
-            console.log("➡️ REVEAL");
+            document.getElementById('view-app').innerHTML = renderQuestion(state);
             renderReveal(state);
             break;
     
