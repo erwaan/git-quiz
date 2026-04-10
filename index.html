@@ -126,9 +126,19 @@
       if (unsubState) unsubState();
       unsubState = onValue(ref(db, `sessions/${sessionId}/state`), snap => {
         const state = snap.val();
-        if (!state) return;
+        if (!state || !state.phase) {
+          showLoading();
+          return;
+        }
         renderState(state);
       });
+    }
+
+    function showLoading() {
+      document.getElementById('view-app').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#5a7070">
+          Connexion à la session…
+        </div>`;
     }
 
     function renderState(state) {
