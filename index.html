@@ -181,7 +181,8 @@
     
           case 'reveal':
             document.getElementById('view-app').innerHTML = renderQuestion(state);
-            renderReveal(state);
+            // ✅ Laisser le DOM se peindre avant de modifier les boutons
+            requestAnimationFrame(() => renderReveal(state));
             break;
     
           case 'final':
@@ -269,10 +270,10 @@
     function renderReveal(state) {
       const correctIdx = state.answer;
       if (correctIdx === null || correctIdx === undefined) return;
-
+    
       const choices = document.querySelectorAll('.choice-p');
-      if (!choices.length) return; // screen already replaced
-
+      if (!choices.length) return;
+    
       let wasCorrect = false;
       choices.forEach((btn, i) => {
         btn.disabled = true;
@@ -284,12 +285,12 @@
           btn.classList.add('reveal-wrong');
         }
       });
-
+    
       if (wasCorrect) currentScore++;
-
-      // Update/replace waiting banner
+    
+      // ✅ Retire le banner "en attente" s'il existe, sinon insère après le texte
       const existing = document.querySelector('.waiting-msg');
-      const msg  = document.createElement('div');
+      const msg = document.createElement('div');
       msg.className = wasCorrect
         ? 'waiting-msg correct-msg'
         : (myLastChoice === null ? 'waiting-msg neutral-msg' : 'waiting-msg wrong-msg');
@@ -298,20 +299,19 @@
         : myLastChoice === null
           ? 'Temps écoulé — vous n\'avez pas répondu'
           : '✗ Mauvaise réponse';
-
-      if (existing) existing.replaceWith(msg);
-      else {
+    
+      if (existing) {
+        existing.replaceWith(msg);
+      } else {
         const qText = document.querySelector('.q-text-p');
         if (qText) qText.insertAdjacentElement('afterend', msg);
       }
-
-      // Update score pill
+    
       const pill = document.querySelector('.score-pill');
-      if (pill) pill.textContent = `⭐ ${currentScore} pt${currentScore>1?'s':''}`;
-
-      // Push score to Firebase
+      if (pill) pill.textContent = `⭐ ${currentScore} pt${currentScore > 1 ? 's' : ''}`;
+    
       update(ref(db, `sessions/${sessionId}/scores/${playerId}`), {
-        name:  playerName,
+        name: playerName,
         score: currentScore
       });
     }
