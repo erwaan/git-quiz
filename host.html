@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Git — Animateur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <script type="module">
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    /* ════════════════════════════════════════════════════════════════
+       1. REMPLACEZ PAR VOTRE CONFIG FIREBASE  (voir FIREBASE_SETUP.md)
+    ════════════════════════════════════════════════════════════════ */
+    const FIREBASE_CONFIG = {
+      apiKey:            "VOTRE_API_KEY",
+      authDomain:        "VOTRE_PROJET.firebaseapp.com",
+      databaseURL:       "https://VOTRE_PROJET-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:         "VOTRE_PROJET",
+      storageBucket:     "VOTRE_PROJET.appspot.com",
+      messagingSenderId: "000000000000",
+      appId:             "1:000000000000:web:000000000000"
+    };
+
+    /* ════════════════════════════════════════════════════════════════
+       2. VOS QUIZ
+       ─────────────────────────────────────────────────────────────
+       showLeaderboard: true  → classement individuel avec pseudos
+       showLeaderboard: false → stats agrégées anonymes seulement
+    ════════════════════════════════════════════════════════════════ */
+    const QUIZZES = [
+      {
+        id: "git-intro",
+        title: "Quiz 1 — Introduction à Git",
+        showLeaderboard: false,           // ← stats agrégées, pas de classement
+        questions: [
+          {
+            q: "Qu'est-ce que Git ?",
+            choices: [
+              "Un hébergeur de code en ligne comme GitHub",
+              "Un système de contrôle de version local",
+              "Un éditeur de texte pour développeurs",
+              "Un langage de programmation"
+            ],
+            answer: 1
+          },
+          {
+            q: "Quels sont les 3 états (zones) de Git ?",
+            choices: [
+              "Local, Remote, Cloud",
+              "Draft, Review, Published",
+              "Working directory, Staging area, Repository",
+              "Modified, Compiled, Deployed"
+            ],
+            answer: 2
+          },
+          {
+            q: "À quoi sert la Staging Area ?",
+            choices: [
+              "Stocker les commits envoyés au serveur",
+              "Sélectionner précisément les fichiers à commiter",
+              "Afficher l'historique des modifications",
+              "Sauvegarder automatiquement le projet"
+            ],
+            answer: 1
+          },
+          {
+            q: "Que représente un commit ?",
+            choices: [
+              "Une sauvegarde automatique",
+              "Une étape dans l'historique du projet",
+              "L'envoi du code vers le serveur distant",
+              "La fusion de deux branches"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "git-commandes",
+        title: "Quiz 2 — Commandes du quotidien",
+        showLeaderboard: true,            // ← classement individuel avec pseudos
+        questions: [
+          {
+            q: "Quelle commande ajoute tous les fichiers modifiés à l'index ?",
+            choices: ["git commit -a", "git add .", "git add -A", "git push --all"],
+            answer: 2
+          },
+          {
+            q: "Comment écrire le message de commit sans ouvrir vim ?",
+            choices: ["git commit --no-edit", "git commit --message", 'git commit -m "msg"', 'git commit -e "msg"'],
+            answer: 2
+          },
+          {
+            q: "Que fait git push ?",
+            choices: [
+              "Télécharge les commits distants",
+              "Fusionne deux branches",
+              "Envoie les commits locaux vers le distant",
+              "Crée un nouveau dépôt"
+            ],
+            answer: 2
+          },
+          {
+            q: "Quel est le bon ordre des opérations ?",
+            choices: ["push→pull→commit→add", "add→commit→pull→push", "commit→add→push→pull", "pull→add→push→commit"],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "git-demarrer",
+        title: "Quiz 3 — Démarrer un projet",
+        showLeaderboard: true,
+        questions: [
+          {
+            q: "Quelle commande initialise un dépôt Git local ?",
+            choices: ["git start", "git create", "git new", "git init"],
+            answer: 3
+          },
+          {
+            q: "Comment récupérer un projet distant existant ?",
+            choices: ["git pull <url>", "git fetch <url>", "git clone <url>", "git init <url>"],
+            answer: 2
+          },
+          {
+            q: "Quelle commande lie le dépôt local au distant ?",
+            choices: ["git link origin <url>", "git remote add origin <url>", "git push origin <url>", "git connect origin <url>"],
+            answer: 1
+          }
+        ]
+      }
+    ];
+    /* ════════════════════════════════════════════════════════════════ */
+
+    const LETTERS = ['A','B','C','D','E','F'];
+    const COLORS  = ['#00e5a0','#ff6b35','#7b61ff','#ffd93d','#ff4757','#48dbfb'];
+
+    let db, sessionId, currentQuizIdx, currentQIdx, unsubAnswers, unsubJoins;
+    // Accumulate per-question stats for the anonymous final recap
+    let allQuestionStats = [];
+
+    function genCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      return Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+    }
+
+    function qrUrl(text) {
+      return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(text)}&bgcolor=0a0c0c&color=00e5a0&margin=12`;
+    }
+
+    /* ── INIT ── */
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const app = initializeApp(FIREBASE_CONFIG);
+        db = getDatabase(app);
+        showSetup();
+      } catch(e) {
+        document.getElementById('app').innerHTML = errBox('Ouvrez <code>host.html</code> et remplacez le bloc <code>FIREBASE_CONFIG</code>.<br>Consultez <strong>FIREBASE_SETUP.md</strong>.');
+      }
+    });
+
+    function errBox(msg) {
+      return `<div class="error-box"><h2>⚠️ Firebase non configuré</h2><p>${msg}</p></div>`;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       SETUP
+    ════════════════════════════════════════════════════════════════ */
+    function showSetup() {
+      document.getElementById('app').innerHTML = `
+        <div class="screen-setup">
+          <div class="brand-tag">Animateur</div>
+          <h1>Quiz Git<br><span>Participatif</span></h1>
+          <p class="lead">Choisissez un quiz pour démarrer une session</p>
+          <div class="quiz-list">
+            ${QUIZZES.map((q,i) => `
+              <button class="quiz-pick-btn" onclick="window._startSession(${i})">
+                <span class="qpb-num">Quiz ${i+1}</span>
+                <div class="qpb-center">
+                  <span class="qpb-title">${q.title}</span>
+                  <span class="qpb-badge ${q.showLeaderboard ? 'badge-rank' : 'badge-anon'}">
+                    ${q.showLeaderboard ? '🏆 Classement' : '📊 Stats anonymes'}
+                  </span>
+                </div>
+                <span class="qpb-count">${q.questions.length} questions →</span>
+              </button>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       START SESSION
+    ════════════════════════════════════════════════════════════════ */
+    window._startSession = async function(quizIdx) {
+      currentQuizIdx = quizIdx;
+      currentQIdx    = -1;
+      allQuestionStats = [];
+      sessionId = genCode();
+
+      const quiz = QUIZZES[quizIdx];
+      await set(ref(db, `sessions/${sessionId}`), {
+        quizId:         quiz.id,
+        quizTitle:      quiz.title,
+        showLeaderboard: quiz.showLeaderboard,
+        questionCount:  quiz.questions.length,
+        state:          { phase: 'lobby', qIdx: -1 },
+        players:        {},
+        currentAnswers: {},
+        scores:         {}
+      });
+
+      showLobby();
+    };
+
+    /* ════════════════════════════════════════════════════════════════
+       LOBBY
+    ════════════════════════════════════════════════════════════════ */
+    function showLobby() {
+      const quiz    = QUIZZES[currentQuizIdx];
+      const joinUrl = buildJoinUrl();
+
+      document.getElementById('app').innerHTML = `
+        <div class="screen-lobby">
+          <div class="lobby-top">
+            <div class="session-badge">Code de session</div>
+            <div class="session-code">${sessionId}</div>
+            <div class="session-quiz-name">${quiz.title}</div>
+          </div>
+          <div class="lobby-body">
+            <div class="qr-block">
+              <div class="qr-label">Scanner pour rejoindre</div>
+              <img src="${qrUrl(joinUrl)}" class="qr-img" alt="QR Code"/>
+              <div class="join-url">${joinUrl}</div>
+            </div>
+            <div class="lobby-right">
+              <div class="players-header">Participants connectés</div>
+              <div class="players-list" id="players-list"><span class="muted">En attente…</span></div>
+              <div class="player-count"><span id="player-count">0</span> participant(s)</div>
+              <button class="btn-launch" onclick="window._launchQuestion()">
+                ▶ Lancer la première question
+              </button>
+            </div>
+          </div>
+        </div>`;
+
+      if (unsubJoins) unsubJoins();
+      unsubJoins = onValue(ref(db, `sessions/${sessionId}/players`), snap => {
+        const players = snap.val() || {};
+        const names   = Object.values(players).map(p => p.name);
+        const el      = document.getElementById('player-count');
+        const list    = document.getElementById('players-list');
+        if (!el) return;
+        el.textContent = names.length;
+        list.innerHTML = names.length
+          ? names.map(n => `<span class="player-chip">${esc(n)}</span>`).join('')
+          : `<span class="muted">En attente…</span>`;
+      });
+    }
+
+    function buildJoinUrl() {
+      const base = location.origin + location.pathname.replace('host.html','index.html');
+      return `${base}?s=${sessionId}`;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       QUESTION
+    ════════════════════════════════════════════════════════════════ */
+    window._launchQuestion = async function() {
+      currentQIdx++;
+      const quiz = QUIZZES[currentQuizIdx];
+      if (currentQIdx >= quiz.questions.length) { showFinalResults(); return; }
+
+      const q = quiz.questions[currentQIdx];
+
+      // Reset current answers node
+      await set(ref(db, `sessions/${sessionId}/currentAnswers`), null);
+      await update(ref(db, `sessions/${sessionId}/state`), {
+        phase:    'question',
+        qIdx:     currentQIdx,
+        question: q.q,
+        choices:  q.choices,
+        answer:   null
+      });
+
+      showQuestionHost(q, currentQIdx, quiz.questions.length);
+    };
+
+    function showQuestionHost(q, idx, total) {
+      document.getElementById('app').innerHTML = `
+        <div class="screen-question">
+          <div class="q-header">
+            <div class="q-meta">
+              <span class="session-pill">⬡ ${sessionId}</span>
+              <span class="q-counter">Question ${idx+1} / ${total}</span>
+            </div>
+            <div class="response-live">
+              <span class="resp-dot" id="resp-dot"></span>
+              <span id="resp-count">0</span>&thinsp;/&thinsp;<span id="resp-total">?</span> réponse(s)
+            </div>
+          </div>
+
+          <div class="q-text">${q.q}</div>
+
+          <div class="choices-host">
+            ${q.choices.map((c,i) => `
+              <div class="choice-host" id="ch${i}" style="--col:${COLORS[i]}">
+                <span class="ch-letter">${LETTERS[i]}</span>
+                <span class="ch-text">${c}</span>
+                <div class="ch-bar-wrap">
+                  <div class="ch-bar" id="bar${i}" style="width:0%"></div>
+                </div>
+                <span class="ch-pct" id="pct${i}">0%</span>
+                <span class="ch-count" id="cnt${i}">0</span>
+              </div>`).join('')}
+          </div>
+
+          <div class="q-actions">
+            <button class="btn-reveal" id="btn-reveal" onclick="window._revealAnswer(${q.answer})">
+              👁&nbsp; Révéler la réponse
+            </button>
+          </div>
+        </div>`;
+
+      if (unsubAnswers) unsubAnswers();
+      unsubAnswers = onValue(ref(db, `sessions/${sessionId}/currentAnswers`), snap => {
+        const data  = snap.val() || {};
+        const votes = new Array(q.choices.length).fill(0);
+        Object.values(data).forEach(a => { if (a.choice !== undefined) votes[a.choice]++; });
+        const totalVotes = votes.reduce((s,v)=>s+v, 0);
+
+        // Update player total (from players node, read once)
+        onValue(ref(db, `sessions/${sessionId}/players`), ps => {
+          const n = Object.keys(ps.val() || {}).length;
+          const el = document.getElementById('resp-total');
+          if (el) el.textContent = n;
+        }, { onlyOnce: true });
+
+        const countEl = document.getElementById('resp-count');
+        if (countEl) countEl.textContent = totalVotes;
+
+        // Pulse dot on new answer
+        const dot = document.getElementById('resp-dot');
+        if (dot) { dot.classList.remove('pulse'); void dot.offsetWidth; dot.classList.add('pulse'); }
+
+        votes.forEach((v,i) => {
+          const pct  = totalVotes > 0 ? Math.round(v/totalVotes*100) : 0;
+          const bar  = document.getElementById('bar'+i);
+          const cnt  = document.getElementById('cnt'+i);
+          const pctEl= document.getElementById('pct'+i);
+          if (bar)  bar.style.width   = pct + '%';
+          if (cnt)  cnt.textContent   = v;
+          if (pctEl)pctEl.textContent = pct + '%';
+        });
+      });
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       REVEAL
+    ════════════════════════════════════════════════════════════════ */
+    window._revealAnswer = async function(correctIdx) {
+      if (unsubAnswers) { unsubAnswers(); unsubAnswers = null; }
+
+      const quiz = QUIZZES[currentQuizIdx];
+      const q    = quiz.questions[currentQIdx];
+
+      await update(ref(db, `sessions/${sessionId}/state`), {
+        phase:  'reveal',
+        answer: correctIdx
+      });
+
+      // Snapshot final votes for the aggregated recap
+      onValue(ref(db, `sessions/${sessionId}/currentAnswers`), snap => {
+        const data  = snap.val() || {};
+        const votes = new Array(q.choices.length).fill(0);
+        Object.values(data).forEach(a => { if (a.choice !== undefined) votes[a.choice]++; });
+        allQuestionStats.push({ q: q.q, choices: q.choices, answer: correctIdx, votes });
+      }, { onlyOnce: true });
+
+      // Host UI: highlight correct / dim wrong
+      q.choices.forEach((_,i) => {
+        const el = document.getElementById('ch'+i);
+        if (el) el.classList.add(i === correctIdx ? 'correct' : 'wrong');
+      });
+
+      const isLast  = currentQIdx + 1 >= quiz.questions.length;
+      const nextLabel = isLast
+        ? (quiz.showLeaderboard ? '🏆 Voir le classement' : '📊 Voir les résultats')
+        : '→ Question suivante';
+
+      document.querySelector('.q-actions').innerHTML = `
+        <button class="btn-reveal btn-next-q" onclick="window._launchQuestion()">
+          ${nextLabel}
+        </button>`;
+    };
+
+    /* ════════════════════════════════════════════════════════════════
+       FINAL RESULTS
+    ════════════════════════════════════════════════════════════════ */
+    async function showFinalResults() {
+      await update(ref(db, `sessions/${sessionId}/state`), { phase: 'final' });
+      const quiz = QUIZZES[currentQuizIdx];
+
+      if (quiz.showLeaderboard) {
+        showLeaderboard(quiz);
+      } else {
+        showAggregatedStats(quiz);
+      }
+    }
+
+    /* ── LEADERBOARD (showLeaderboard: true) ── */
+    function showLeaderboard(quiz) {
+      onValue(ref(db, `sessions/${sessionId}/scores`), snap => {
+        const scores = snap.val() || {};
+        const sorted = Object.values(scores).sort((a,b) => b.score - a.score);
+        const medals = ['🥇','🥈','🥉'];
+
+        document.getElementById('app').innerHTML = `
+          <div class="screen-final">
+            <div class="final-eyebrow">Résultats finaux</div>
+            <div class="final-title">🏆 Classement</div>
+            <div class="final-quiz">${quiz.title}</div>
+
+            <div class="podium">
+              ${sorted.length === 0
+                ? `<p class="muted" style="text-align:center;padding:24px">Aucune réponse enregistrée</p>`
+                : sorted.map((p,i) => `
+                  <div class="podium-row rank-${Math.min(i+1,4)}" style="animation-delay:${i*60}ms">
+                    <span class="rank-medal">${medals[i] || i+1}</span>
+                    <span class="rank-name">${esc(p.name)}</span>
+                    <div class="rank-bar-wrap">
+                      <div class="rank-bar" style="width:${sorted[0].score>0?Math.round(p.score/sorted[0].score*100):0}%"></div>
+                    </div>
+                    <span class="rank-score">${p.score}&thinsp;pt${p.score>1?'s':''}</span>
+                  </div>`).join('')}
+            </div>
+
+            <div class="final-actions">
+              <button class="btn-secondary" onclick="window._startSession(${currentQuizIdx})">↺ Relancer</button>
+              <button class="btn-primary-act" onclick="window._showSetup()">← Autres quiz</button>
+            </div>
+          </div>`;
+      }, { onlyOnce: true });
+    }
+
+    /* ── AGGREGATED STATS (showLeaderboard: false) ── */
+    function showAggregatedStats(quiz) {
+      document.getElementById('app').innerHTML = `
+        <div class="screen-final screen-stats">
+          <div class="final-eyebrow">Résultats finaux</div>
+          <div class="final-title">📊 Récapitulatif</div>
+          <div class="final-quiz">${quiz.title}</div>
+
+          <div class="stats-grid">
+            ${allQuestionStats.map((qs, qi) => {
+              const total = qs.votes.reduce((s,v)=>s+v,0);
+              return `
+                <div class="stat-card">
+                  <div class="stat-q-num">Q${qi+1}</div>
+                  <div class="stat-q-text">${qs.q}</div>
+                  <div class="stat-bars">
+                    ${qs.choices.map((c,i) => {
+                      const pct = total > 0 ? Math.round(qs.votes[i]/total*100) : 0;
+                      const isOk = i === qs.answer;
+                      return `
+                        <div class="stat-row ${isOk ? 'stat-correct' : ''}">
+                          <span class="stat-letter" style="color:${COLORS[i]}">${LETTERS[i]}</span>
+                          <div class="stat-bar-wrap">
+                            <div class="stat-bar" style="width:${pct}%;background:${isOk ? 'var(--correct)' : COLORS[i]}"></div>
+                          </div>
+                          <span class="stat-pct">${pct}%</span>
+                          <span class="stat-label">${c}</span>
+                        </div>`;
+                    }).join('')}
+                  </div>
+                  <div class="stat-footer">${total} réponse${total>1?'s':''} — ${Math.round((qs.votes[qs.answer]||0)/Math.max(total,1)*100)}% corrects ✓</div>
+                </div>`;
+            }).join('')}
+          </div>
+
+          <div class="final-actions">
+            <button class="btn-secondary" onclick="window._startSession(${currentQuizIdx})">↺ Relancer</button>
+            <button class="btn-primary-act" onclick="window._showSetup()">← Autres quiz</button>
+          </div>
+        </div>`;
+    }
+
+    window._showSetup  = showSetup;
+    window._startSession = window._startSession; // already defined
+
+    /* ── HELPERS ── */
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+  </script>
+  <style>
+    :root {
+      --bg:      #0a0c0c;
+      --surface: #111515;
+      --surface2:#181e1e;
+      --border:  #222d2d;
+      --accent:  #00e5a0;
+      --accent2: #ff6b35;
+      --text:    #e8f0ee;
+      --muted:   #5a7070;
+      --correct: #00c97a;
+      --wrong:   #ff4757;
+      --mono:    'Space Mono', monospace;
+      --display: 'Syne', sans-serif;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:var(--mono); min-height:100vh; }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(0,229,160,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,.025) 1px, transparent 1px);
+      background-size:48px 48px; pointer-events:none; z-index:0;
+    }
+    #app { position:relative; z-index:1; min-height:100vh; }
+
+    /* ── SETUP ── */
+    .screen-setup { max-width:700px; margin:0 auto; padding:60px 24px; }
+    .brand-tag {
+      display:inline-block; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+      color:var(--accent); border:1px solid var(--accent); padding:3px 10px; margin-bottom:20px;
+    }
+    h1 { font-family:var(--display); font-size:clamp(2.5rem,6vw,4rem); font-weight:800;
+         line-height:1.05; letter-spacing:-.02em; margin-bottom:12px; }
+    h1 span { color:var(--accent); }
+    .lead { color:var(--muted); font-size:14px; margin-bottom:40px; }
+    .quiz-list { display:flex; flex-direction:column; gap:12px; }
+    .quiz-pick-btn {
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text); font-family:var(--mono); padding:20px 24px; text-align:left;
+      cursor:pointer; display:grid; grid-template-columns:auto 1fr auto; align-items:center;
+      gap:16px; transition:border-color .15s, background .15s, transform .1s;
+    }
+    .quiz-pick-btn:hover { border-color:var(--accent); background:rgba(0,229,160,.05); transform:translateX(4px); }
+    .qpb-num   { font-size:11px; letter-spacing:.15em; color:var(--accent); text-transform:uppercase; }
+    .qpb-center{ display:flex; flex-direction:column; gap:5px; }
+    .qpb-title { font-family:var(--display); font-size:1rem; font-weight:800; }
+    .qpb-badge { font-size:10px; letter-spacing:.08em; padding:2px 8px; border:1px solid; display:inline-block; width:fit-content; }
+    .badge-rank { border-color:gold; color:gold; background:rgba(255,215,0,.07); }
+    .badge-anon { border-color:var(--accent); color:var(--accent); background:rgba(0,229,160,.07); }
+    .qpb-count { font-size:11px; color:var(--muted); white-space:nowrap; }
+
+    /* ── LOBBY ── */
+    .screen-lobby { padding:40px 32px; max-width:1100px; margin:0 auto; }
+    .lobby-top { text-align:center; margin-bottom:40px; padding-bottom:32px; border-bottom:1px solid var(--border); }
+    .session-badge { font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+    .session-code {
+      font-family:var(--display); font-size:clamp(3rem,8vw,5rem);
+      font-weight:800; color:var(--accent); letter-spacing:.25em; line-height:1;
+      text-shadow:0 0 50px rgba(0,229,160,.25);
+    }
+    .session-quiz-name { font-size:14px; color:var(--muted); margin-top:8px; }
+    .lobby-body { display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start; }
+    .qr-block { display:flex; flex-direction:column; align-items:center; gap:12px; }
+    .qr-label { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+    .qr-img { width:220px; height:220px; border:1px solid var(--border); }
+    .join-url {
+      font-size:11px; color:var(--muted); word-break:break-all; text-align:center;
+      background:var(--surface); border:1px solid var(--border); padding:8px 12px; width:100%;
+    }
+    .players-header { font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+    .players-list { display:flex; flex-wrap:wrap; gap:8px; min-height:56px; margin-bottom:14px; }
+    .player-chip {
+      background:var(--surface2); border:1px solid var(--border);
+      font-size:12px; padding:5px 12px; animation:popIn .2s ease;
+    }
+    @keyframes popIn { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+    .player-count { font-size:13px; color:var(--muted); margin-bottom:22px; }
+    .player-count span { font-weight:700; color:var(--accent); font-size:1.4rem; font-family:var(--display); }
+    .btn-launch {
+      width:100%; background:var(--accent); color:var(--bg);
+      font-family:var(--mono); font-size:14px; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      border:none; padding:16px; cursor:pointer; transition:opacity .15s, transform .1s;
+    }
+    .btn-launch:hover { opacity:.85; transform:translateY(-1px); }
+
+    /* ── QUESTION HOST ── */
+    .screen-question { padding:28px 40px; max-width:1100px; margin:0 auto; }
+    .q-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .q-meta { display:flex; align-items:center; gap:14px; }
+    .session-pill {
+      font-size:11px; letter-spacing:.15em; background:var(--surface2);
+      border:1px solid var(--border); padding:4px 10px; color:var(--accent);
+    }
+    .q-counter { font-size:13px; color:var(--muted); }
+    .response-live { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--accent); }
+    .resp-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+    .resp-dot.pulse { animation:dotPulse .4s ease; }
+    @keyframes dotPulse { 0%{transform:scale(1)} 50%{transform:scale(2.2);opacity:.4} 100%{transform:scale(1)} }
+    .q-text {
+      font-family:var(--display); font-size:clamp(1.3rem,3vw,1.9rem);
+      font-weight:800; line-height:1.35; margin-bottom:28px;
+      border-left:4px solid var(--accent); padding-left:20px;
+    }
+    .choices-host { display:grid; gap:10px; margin-bottom:28px; }
+    .choice-host {
+      background:var(--surface); border:1px solid var(--border); padding:14px 18px;
+      display:grid; grid-template-columns:28px 1fr auto auto 44px;
+      align-items:center; gap:14px; position:relative; overflow:hidden;
+      transition:border-color .3s, opacity .3s;
+    }
+    .choice-host::before { content:''; position:absolute; inset:0; background:var(--col); opacity:.05; pointer-events:none; }
+    .ch-letter { font-weight:700; font-size:14px; color:var(--col); }
+    .ch-text   { font-size:13px; line-height:1.4; }
+    .ch-bar-wrap { width:120px; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+    .ch-bar { height:100%; background:var(--col); border-radius:3px; transition:width .4s ease; box-shadow:0 0 6px var(--col); }
+    .ch-pct  { font-size:12px; color:var(--col); width:36px; text-align:right; }
+    .ch-count{ font-weight:700; font-size:15px; text-align:right; color:var(--col); }
+    .choice-host.correct { border-color:var(--correct) !important; background:rgba(0,201,122,.1); }
+    .choice-host.wrong   { opacity:.4; }
+    .q-actions { display:flex; justify-content:flex-end; }
+    .btn-reveal {
+      background:transparent; border:1px solid var(--accent); color:var(--accent);
+      font-family:var(--mono); font-size:13px; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      padding:13px 28px; cursor:pointer; transition:background .15s;
+    }
+    .btn-reveal:hover { background:rgba(0,229,160,.1); }
+    .btn-next-q { background:var(--accent); color:var(--bg); border:none; }
+    .btn-next-q:hover { opacity:.85; }
+
+    /* ── FINAL SHARED ── */
+    .screen-final { max-width:680px; margin:0 auto; padding:52px 24px; text-align:center; }
+    .final-eyebrow { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+    .final-title { font-family:var(--display); font-size:clamp(1.8rem,5vw,2.8rem); font-weight:800; margin-bottom:6px; }
+    .final-quiz  { font-size:13px; color:var(--muted); margin-bottom:36px; }
+    .final-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:36px; }
+    .btn-secondary { background:transparent; border:1px solid var(--accent); color:var(--accent); font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:13px 22px; cursor:pointer; transition:background .15s; }
+    .btn-secondary:hover { background:rgba(0,229,160,.1); }
+    .btn-primary-act { background:var(--accent); color:var(--bg); font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:13px 22px; border:none; cursor:pointer; transition:opacity .15s; }
+    .btn-primary-act:hover { opacity:.85; }
+
+    /* ── LEADERBOARD ── */
+    .podium { display:flex; flex-direction:column; gap:8px; }
+    .podium-row {
+      display:grid; grid-template-columns:44px 1fr auto auto;
+      align-items:center; gap:14px;
+      background:var(--surface); border:1px solid var(--border); padding:14px 18px;
+      animation:slideIn .35s ease both;
+    }
+    @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .podium-row.rank-1 { border-color:gold;     background:rgba(255,215,0,.07); }
+    .podium-row.rank-2 { border-color:#a8a8a8;  background:rgba(168,168,168,.05); }
+    .podium-row.rank-3 { border-color:#cd7f32;  background:rgba(205,127,50,.05); }
+    .rank-medal { font-size:1.5rem; text-align:center; }
+    .rank-name  { font-family:var(--display); font-size:1rem; font-weight:700; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rank-bar-wrap { height:4px; background:var(--border); border-radius:2px; overflow:hidden; width:100px; }
+    .rank-bar { height:100%; background:var(--accent); border-radius:2px; transition:width .6s ease; }
+    .rank-score { font-weight:700; color:var(--accent); white-space:nowrap; }
+
+    /* ── AGGREGATED STATS ── */
+    .screen-stats { max-width:860px; }
+    .stats-grid { display:grid; gap:20px; text-align:left; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); padding:22px 24px; }
+    .stat-q-num { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+    .stat-q-text { font-family:var(--display); font-size:.95rem; font-weight:700; line-height:1.4; margin-bottom:16px; }
+    .stat-bars { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+    .stat-row { display:grid; grid-template-columns:20px 1fr auto; align-items:center; gap:10px; }
+    .stat-row.stat-correct .stat-pct { color:var(--correct); font-weight:700; }
+    .stat-letter { font-weight:700; font-size:12px; }
+    .stat-bar-wrap { position:relative; height:5px; background:var(--border); border-radius:3px; overflow:visible; }
+    .stat-bar { height:100%; border-radius:3px; transition:width .5s ease; }
+    .stat-pct { font-size:12px; color:var(--muted); width:32px; text-align:right; }
+    /* label below bar */
+    .stat-label { display:none; } /* label hidden in grid, shown via title */
+    .stat-row { grid-template-columns:20px 1fr 36px; }
+    .stat-row[title] { cursor:help; }
+    .stat-footer { font-size:11px; color:var(--muted); border-top:1px solid var(--border); padding-top:10px; }
+
+    /* ── MISC ── */
+    .muted { color:var(--muted); font-size:13px; }
+    .error-box { max-width:560px; margin:80px auto; padding:40px; background:var(--surface); border:1px solid var(--wrong); position:relative; z-index:1; }
+    .error-box h2 { font-family:var(--display); margin-bottom:16px; color:var(--wrong); }
+    .error-box p  { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:8px; }
+    .error-box code { color:var(--accent2); font-family:var(--mono); }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+      <span style="font-family:'Space Mono',monospace;color:#5a7070;font-size:13px;">Connexion à Firebase…</span>
+    </div>
+  </div>
+</body>
+</html>
