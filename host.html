@@ -28,7 +28,7 @@
        2. VOS QUIZ
        ─────────────────────────────────────────────────────────────
     ════════════════════════════════════════════════════════════════ */
-     showLeaderboard: true  // → classement individuel avec pseudos
+     // showLeaderboard: true  // → classement individuel avec pseudos
      // showLeaderboard: false // → stats agrégées anonymes seulement
     const QUIZZES = [
       /* ── QUIZ 1 ─────────────────────────────────────────────── */
@@ -36,6 +36,7 @@
         id: "git-intro",
         title: "Quiz 1 — Introduction à Git",
         desc: "Qu'est-ce que Git, les 3 zones, notions fondamentales.",
+        showLeaderboard: true,
         questions: [
           {
             q: "Qu'est-ce que Git ?",
@@ -111,6 +112,7 @@
         id: "git-commandes",
         title: "Quiz 2 — Commandes du quotidien",
         desc: "add, commit, push, pull et le workflow standard.",
+        showLeaderboard: true,
         questions: [
           {
             q: "Quelle commande permet d'ajouter <em>tous</em> les fichiers modifiés du projet à l'index ?",
@@ -186,6 +188,7 @@
         id: "git-demarrer",
         title: "Quiz 3 — Démarrer un projet",
         desc: "git init, git clone, lier un dépôt distant.",
+        showLeaderboard: true,
         questions: [
           {
             q: "Quelle commande initialise un nouveau dépôt Git dans le dossier courant ?",
@@ -250,6 +253,7 @@
         id: "git-branches",
         title: "Quiz 4 — Branches & Merges",
         desc: "Teste tes connaissances sur les branches et les merges Git",
+        showLeaderboard: true,
         questions: [
           {
             q: "Quel est le principal avantage d'utiliser des branches Git ?",
