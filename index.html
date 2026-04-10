@@ -214,6 +214,11 @@
 
     /* ── QUESTION ── */
     function renderQuestion(state) {
+      // ✅ Convertir choices en tableau si Firebase l'a transformé en objet
+      const choices = Array.isArray(state.choices)
+        ? state.choices
+        : Object.values(state.choices || {});
+    
       return `
         <div class="screen-q-p">
           <div class="q-top-bar">
@@ -222,7 +227,7 @@
           </div>
           <div class="q-text-p">${state.question}</div>
           <div class="choices-p">
-            ${state.choices.map((c,i) => `
+            ${choices.map((c,i) => `
               <button class="choice-p" style="--col:${COLORS[i]}" id="cp${i}"
                 onclick="window._answer(${i})">
                 <span class="cp-letter">${LETTERS[i]}</span>
