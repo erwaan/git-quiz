@@ -124,16 +124,35 @@
     ════════════════════════════════════════════════════════════════ */
     function watchState() {
       if (unsubState) unsubState();
+    
+      console.log("👀 WATCHING STATE:", sessionId);
+    
       unsubState = onValue(ref(db, `sessions/${sessionId}/state`), snap => {
         const state = snap.val();
-        if (!state || !state.phase) {
+    
+        console.log("📡 STATE RAW SNAP:", snap);
+        console.log("📡 STATE VALUE:", state);
+    
+        if (!state) {
+          console.warn("⚠️ STATE NULL");
           showLoading();
           return;
         }
+    
+        if (!state.phase) {
+          console.warn("⚠️ STATE WITHOUT PHASE", state);
+          showLoading();
+          return;
+        }
+    
+        console.log("✅ RENDERING PHASE:", state.phase);
+    
         renderState(state);
+      }, (err) => {
+        console.error("🔥 FIREBASE ERROR:", err);
       });
     }
-
+    
     function showLoading() {
       document.getElementById('view-app').innerHTML = `
         <div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#5a7070">
@@ -142,16 +161,46 @@
     }
 
     function renderState(state) {
-      const app = document.getElementById('view-app');
-      switch (state.phase) {
-        case 'lobby':    app.innerHTML = renderLobby();           break;
-        case 'question': hasAnswered = false; myLastChoice = null;
-                         app.innerHTML = renderQuestion(state);   break;
-        case 'reveal':   renderReveal(state);                     break;
-        case 'final':    renderFinal();                           break;
+      try {
+        const app = document.getElementById('view-app');
+    
+        console.log("🎯 renderState()", state);
+    
+        switch (state.phase) {
+          case 'lobby':
+            console.log("➡️ LOBBY");
+            app.innerHTML = renderLobby();
+            break;
+    
+          case 'question':
+            console.log("➡️ QUESTION");
+            hasAnswered = false;
+            myLastChoice = null;
+            app.innerHTML = renderQuestion(state);
+            break;
+    
+          case 'reveal':
+            console.log("➡️ REVEAL");
+            renderReveal(state);
+            break;
+    
+          case 'final':
+            console.log("➡️ FINAL");
+            renderFinal();
+            break;
+    
+          default:
+            console.warn("❓ UNKNOWN PHASE:", state.phase);
+            showLoading();
+        }
+      } catch (e) {
+        console.error("💥 RENDER CRASH:", e);
+        document.getElementById('view-app').innerHTML = `
+          <div style="color:red;padding:20px">
+            Erreur render: ${e.message}
+          </div>`;
       }
     }
-
     /* ── LOBBY ── */
     function renderLobby() {
       return `
