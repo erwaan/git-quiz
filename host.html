@@ -11,9 +11,6 @@
     import { getDatabase, ref, set, onValue, update }
       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    /* ════════════════════════════════════════════════════════════════
-       1. REMPLACEZ PAR VOTRE CONFIG FIREBASE  (voir FIREBASE_SETUP.md)
-    ════════════════════════════════════════════════════════════════ */
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyCYjE4JQfZATN1EDDBEJR3Hmkj_ASkubSY",
       authDomain: "git-quiz-33186.firebaseapp.com",
@@ -24,12 +21,6 @@
       appId: "1:968980471020:web:ca234a472923b5a235d9c9"
     };
 
-    /* ════════════════════════════════════════════════════════════════
-       2. VOS QUIZ
-       ─────────────────────────────────────────────────────────────
-    ════════════════════════════════════════════════════════════════ */
-     // showLeaderboard: true  // → classement individuel avec pseudos
-     // showLeaderboard: false // → stats agrégées anonymes seulement
     const QUIZZES = [
       /* ── QUIZ 1 ─────────────────────────────────────────────── */
       {
@@ -106,7 +97,7 @@
           }
         ]
       },
-    
+
       /* ── QUIZ 2 ─────────────────────────────────────────────── */
       {
         id: "git-commandes",
@@ -182,7 +173,7 @@
           }
         ]
       },
-    
+
       /* ── QUIZ 3 ─────────────────────────────────────────────── */
       {
         id: "git-demarrer",
@@ -247,8 +238,8 @@
           }
         ]
       },
-    
-      /* ── QUIZ 4 — À COMPLÉTER ────────────────────────────────── */
+
+      /* ── QUIZ 4 ────────────────────────────────────────────── */
       {
         id: "git-branches",
         title: "Quiz 4 — Branches & Merges",
@@ -267,15 +258,15 @@
             explain: "Les branches permettent de travailler en parallèle sans perturber la branche principale."
           },
           {
-            q: "Dans l’analogie du roman, que représente la branche <code>main</code> ?",
+            q: "Dans l'analogie du roman, que représente la branche <code>main</code> ?",
             choices: [
               "Une version brouillon",
               "Une fin alternative",
-              "L’histoire officielle",
+              "L'histoire officielle",
               "Une sauvegarde automatique"
             ],
             answer: 2,
-            explain: "La branche main représente l’histoire officielle du projet."
+            explain: "La branche main représente l'histoire officielle du projet."
           },
           {
             q: "Pourquoi créer une branche pour une nouvelle fonctionnalité ?",
@@ -308,7 +299,7 @@
               "Crée une branche"
             ],
             answer: 2,
-            explain: "git switch permet de se déplacer d’une branche à une autre."
+            explain: "git switch permet de se déplacer d'une branche à une autre."
           },
           {
             q: "Pourquoi Git peut refuser un <code>git switch</code> même si la branche existe ?",
@@ -319,7 +310,7 @@
               "Le commit précédent est invalide"
             ],
             answer: 1,
-            explain: "Git refuse de changer de branche si des modifications non commit risquent d’être écrasées, afin de protéger votre travail."
+            explain: "Git refuse de changer de branche si des modifications non commit risquent d'être écrasées, afin de protéger votre travail."
           },
           {
             q: "Quelle commande permet de fusionner une branche dans la branche actuelle ?",
@@ -357,7 +348,7 @@
             explain: "Les branches hotfix sont utilisées pour corriger rapidement en production."
           },
           {
-            q: "Que signifie le marqueur <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> lors d’un conflit ?",
+            q: "Que signifie le marqueur <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> lors d'un conflit ?",
             choices: [
               "Fin du conflit",
               "Début de votre version",
@@ -384,11 +375,8 @@
             image: "schema-branches.png",
             choices: [
               "<code>git switch release<br>git merge develop<br>git switch develop<br>git merge release<br>git merge main<br></code>",
-              
               "<code>git push<br>git switch release<br>git merge main<br>git switch develop<br>git merge main</code>",
-              
               "<code>git push<br>git switch main<br>git merge release<br>git switch develop<br>git merge release</code>",
-              
               "Ho tu m'emerdes Erwan, moi je veux passer au TP"
             ],
             answer: 2,
@@ -397,13 +385,11 @@
         ]
       }
     ];
-    /* ════════════════════════════════════════════════════════════════ */
 
     const LETTERS = ['A','B','C','D','E','F'];
     const COLORS  = ['#00e5a0','#ff6b35','#7b61ff','#ffd93d','#ff4757','#48dbfb'];
 
     let db, sessionId, currentQuizIdx, currentQIdx, unsubAnswers, unsubJoins;
-    // Accumulate per-question stats for the anonymous final recap
     let allQuestionStats = [];
 
     function genCode() {
@@ -539,7 +525,6 @@
 
       const q = quiz.questions[currentQIdx];
 
-      // Reset current answers node
       await set(ref(db, `sessions/${sessionId}/currentAnswers`), null);
       await update(ref(db, `sessions/${sessionId}/state`), {
         phase:    'question',
@@ -553,6 +538,9 @@
     };
 
     function showQuestionHost(q, idx, total) {
+      // Reset latest votes cache
+      window._latestVotes = new Array(q.choices.length).fill(0);
+
       document.getElementById('app').innerHTML = `
         <div class="screen-question">
           <div class="q-header">
@@ -573,11 +561,11 @@
               <div class="choice-host" id="ch${i}" style="--col:${COLORS[i]}">
                 <span class="ch-letter">${LETTERS[i]}</span>
                 <span class="ch-text">${c}</span>
-                <div class="ch-bar-wrap">
+                <div class="ch-bar-wrap ch-hidden">
                   <div class="ch-bar" id="bar${i}" style="width:0%"></div>
                 </div>
-                <span class="ch-pct" id="pct${i}">0%</span>
-                <span class="ch-count" id="cnt${i}">0</span>
+                <span class="ch-pct ch-hidden" id="pct${i}">0%</span>
+                <span class="ch-count ch-hidden" id="cnt${i}">0</span>
               </div>`).join('')}
           </div>
 
@@ -595,29 +583,23 @@
         Object.values(data).forEach(a => { if (a.choice !== undefined) votes[a.choice]++; });
         const totalVotes = votes.reduce((s,v)=>s+v, 0);
 
-        // Update player total (from players node, read once)
+        // ✅ Toujours mettre à jour le compteur total en haut à droite
+        const countEl = document.getElementById('resp-count');
+        if (countEl) countEl.textContent = totalVotes;
+
+        // ✅ Mettre à jour le nombre total de joueurs
         onValue(ref(db, `sessions/${sessionId}/players`), ps => {
           const n = Object.keys(ps.val() || {}).length;
           const el = document.getElementById('resp-total');
           if (el) el.textContent = n;
         }, { onlyOnce: true });
 
-        const countEl = document.getElementById('resp-count');
-        if (countEl) countEl.textContent = totalVotes;
-
-        // Pulse dot on new answer
+        // ✅ Pulse du point indicateur
         const dot = document.getElementById('resp-dot');
         if (dot) { dot.classList.remove('pulse'); void dot.offsetWidth; dot.classList.add('pulse'); }
 
-        votes.forEach((v,i) => {
-          const pct  = totalVotes > 0 ? Math.round(v/totalVotes*100) : 0;
-          const bar  = document.getElementById('bar'+i);
-          const cnt  = document.getElementById('cnt'+i);
-          const pctEl= document.getElementById('pct'+i);
-          if (bar)  bar.style.width   = pct + '%';
-          if (cnt)  cnt.textContent   = v;
-          if (pctEl)pctEl.textContent = pct + '%';
-        });
+        // ✅ Stocker les votes pour les afficher au moment du reveal (barres masquées jusqu'alors)
+        window._latestVotes = votes;
       });
     }
 
@@ -635,7 +617,7 @@
         answer: correctIdx
       });
 
-      // Snapshot final votes for the aggregated recap
+      // Snapshot final votes pour le récap agrégé
       onValue(ref(db, `sessions/${sessionId}/currentAnswers`), snap => {
         const data  = snap.val() || {};
         const votes = new Array(q.choices.length).fill(0);
@@ -643,7 +625,23 @@
         allQuestionStats.push({ q: q.q, choices: q.choices, answer: correctIdx, votes });
       }, { onlyOnce: true });
 
-      // Host UI: highlight correct / dim wrong
+      // ✅ Afficher les barres et stats avec les votes mis en cache
+      const votes = window._latestVotes || new Array(q.choices.length).fill(0);
+      const totalVotes = votes.reduce((s, v) => s + v, 0);
+
+      votes.forEach((v, i) => {
+        const pct   = totalVotes > 0 ? Math.round(v / totalVotes * 100) : 0;
+        const bar   = document.getElementById('bar' + i);
+        const cnt   = document.getElementById('cnt' + i);
+        const pctEl = document.getElementById('pct' + i);
+        const wrap  = bar ? bar.parentElement : null;
+
+        if (wrap)  { wrap.style.visibility  = 'visible'; wrap.style.width = pct + '%'; bar.style.width = '100%'; }
+        if (cnt)   { cnt.style.visibility   = 'visible'; cnt.textContent  = v; }
+        if (pctEl) { pctEl.style.visibility = 'visible'; pctEl.textContent = pct + '%'; }
+      });
+
+      // ✅ Surligner correct / griser mauvais
       q.choices.forEach((_,i) => {
         const el = document.getElementById('ch'+i);
         if (el) el.classList.add(i === correctIdx ? 'correct' : 'wrong');
@@ -751,8 +749,7 @@
         </div>`;
     }
 
-    window._showSetup  = showSetup;
-    window._startSession = window._startSession; // already defined
+    window._showSetup = showSetup;
 
     /* ── HELPERS ── */
     function esc(s) {
@@ -879,6 +876,10 @@
     .ch-bar { height:100%; background:var(--col); border-radius:3px; transition:width .4s ease; box-shadow:0 0 6px var(--col); }
     .ch-pct  { font-size:12px; color:var(--col); width:36px; text-align:right; }
     .ch-count{ font-weight:700; font-size:15px; text-align:right; color:var(--col); }
+
+    /* ✅ Classe utilitaire pour masquer les stats avant le reveal */
+    .ch-hidden { visibility: hidden; }
+
     .choice-host.correct { border-color:var(--correct) !important; background:rgba(0,201,122,.1); }
     .choice-host.wrong   { opacity:.4; }
     .q-actions { display:flex; justify-content:flex-end; }
@@ -934,8 +935,7 @@
     .stat-bar-wrap { position:relative; height:5px; background:var(--border); border-radius:3px; overflow:visible; }
     .stat-bar { height:100%; border-radius:3px; transition:width .5s ease; }
     .stat-pct { font-size:12px; color:var(--muted); width:32px; text-align:right; }
-    /* label below bar */
-    .stat-label { display:none; } /* label hidden in grid, shown via title */
+    .stat-label { display:none; }
     .stat-row { grid-template-columns:20px 1fr 36px; }
     .stat-row[title] { cursor:help; }
     .stat-footer { font-size:11px; color:var(--muted); border-top:1px solid var(--border); padding-top:10px; }
