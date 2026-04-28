@@ -559,7 +559,7 @@
      ]
    }
 =================================================================== */
-const QUIZZES = [
+ const QUIZZES = [
       /* ── QUIZ 1 ─────────────────────────────────────────────── */
       {
         id: "git-intro",
@@ -576,9 +576,43 @@ const QUIZZES = [
               "Un langage de programmation orienté objet"
             ],
             answer: 1,
-            explain: "Git est un outil <em>local</em> de gestion de versions. Il suit et gère l'évolution de vos fichiers au fil du temps. GitHub, Gitea, etc. sont des plateformes distantes distinctes."
+            explain: "Git est un outil <em>local</em> de gestion de versions."
+          },
+          
+          {
+            q: "À quel problème git est-il sensé répondre ?",
+            choices: [
+              "Éviter d'avoir 15 fichiers du style <code>mon_script_v2_final_pour_de_vrai_final.sh</code>",
+              "Avoir une seule source de vérité pour les scripts et tous autres fichiers",
+              "Partager et collaborer facilement sur l'écriture d efichiers",
+              "A, B et C et donc D"
+            ],
+            answer: 3,
+            explain: "Et oui, git ça fait tout ça, et c'est génial."
           },
           {
+            q: "Quelle est la différence entre Git et Gitea ?",
+            choices: [
+              "Ça n'a absolument rrrrrrien à voir",
+              "Git est gratuit, Gitea est la version payante",
+              "Gitea offre des commandes plus poussées que Git (idéal pour la gestion de prod)",
+              "Git est un outil local en ligne de commande, Gitea est un service d'ébergement adapté à git"
+            ],
+            answer: 3,
+            explain: "Git est un outil <em>local</em> de gestion de versions. Il suit et gère l'évolution de vos fichiers au fil du temps. GitHub, Gitea, etc. sont des plateformes distantes distinctes."
+          },
+
+        ]
+      },
+
+      /* ── QUIZ 2 ─────────────────────────────────────────────── */
+      {
+        id: "git-commandes",
+        title: "Quiz 2 — Commandes du quotidien",
+        desc: "add, commit, push, pull et le workflow standard.",
+        showLeaderboard: true,
+        questions: [
+            {
             q: "Que représente un <strong>commit</strong> dans Git ?",
             choices: [
               "Une sauvegarde automatique toutes les 5 minutes",
@@ -611,38 +645,6 @@ const QUIZZES = [
             answer: 1,
             explain: "La Staging Area permet de préparer son commit avec précision : on choisit fichier par fichier ce qui sera enregistré, et on peut réviser avant de valider."
           },
-          {
-            q: "Parmi ces noms de fichiers, lequel illustre le problème que Git est censé résoudre ?",
-            choices: [
-              "<code>README.md</code>",
-              "<code>script.sh</code>",
-              "<code>mon_script_v2_final_pour_de_vrai_final.sh</code>",
-              "<code>.gitignore</code>"
-            ],
-            answer: 2,
-            explain: "Git évite la prolifération de fichiers comme <em>v2_final_vraiment_final</em>. Avec Git, une seule version du fichier existe ; tout l'historique est accessible via les commits."
-          },
-          {
-            q: "Que garantit le <strong>hash unique</strong> associé à chaque commit ?",
-            choices: [
-              "Que le commit a bien été envoyé sur le serveur distant",
-              "Que le message du commit est correctement formaté",
-              "L'intégrité et la traçabilité : chaque commit est identifié de façon cryptographiquement unique",
-              "Que le commit a été relu et approuvé par un collègue"
-            ],
-            answer: 2,
-            explain: "Chaque commit est identifié par un hash SHA-1 unique. Cela garantit l'intégrité des données : toute modification, même minime, produirait un hash différent."
-          }
-        ]
-      },
-    
-      /* ── QUIZ 2 ─────────────────────────────────────────────── */
-      {
-        id: "git-commandes",
-        title: "Quiz 2 — Commandes du quotidien",
-        desc: "add, commit, push, pull et le workflow standard.",
-        showLeaderboard: true,
-        questions: [
           {
             q: "Quelle commande permet d'ajouter <em>tous</em> les fichiers modifiés du projet à l'index ?",
             choices: [
@@ -711,7 +713,7 @@ const QUIZZES = [
           }
         ]
       },
-    
+
       /* ── QUIZ 3 ─────────────────────────────────────────────── */
       {
         id: "git-demarrer",
@@ -776,8 +778,8 @@ const QUIZZES = [
           }
         ]
       },
-    
-      /* ── QUIZ 4 — À COMPLÉTER ────────────────────────────────── */
+
+      /* ── QUIZ 4 ────────────────────────────────────────────── */
       {
         id: "git-branches",
         title: "Quiz 4 — Branches & Merges",
@@ -796,15 +798,15 @@ const QUIZZES = [
             explain: "Les branches permettent de travailler en parallèle sans perturber la branche principale."
           },
           {
-            q: "Dans l’analogie du roman, que représente la branche <code>main</code> ?",
+            q: "Dans l'analogie du roman, que représente la branche <code>main</code> ?",
             choices: [
               "Une version brouillon",
               "Une fin alternative",
-              "L’histoire officielle",
+              "L'histoire officielle",
               "Une sauvegarde automatique"
             ],
             answer: 2,
-            explain: "La branche main représente l’histoire officielle du projet."
+            explain: "La branche main représente l'histoire officielle du projet."
           },
           {
             q: "Pourquoi créer une branche pour une nouvelle fonctionnalité ?",
@@ -837,7 +839,7 @@ const QUIZZES = [
               "Crée une branche"
             ],
             answer: 2,
-            explain: "git switch permet de se déplacer d’une branche à une autre."
+            explain: "git switch permet de se déplacer d'une branche à une autre."
           },
           {
             q: "Pourquoi Git peut refuser un <code>git switch</code> même si la branche existe ?",
@@ -848,7 +850,7 @@ const QUIZZES = [
               "Le commit précédent est invalide"
             ],
             answer: 1,
-            explain: "Git refuse de changer de branche si des modifications non commit risquent d’être écrasées, afin de protéger votre travail."
+            explain: "Git refuse de changer de branche si des modifications non commit risquent d'être écrasées, afin de protéger votre travail."
           },
           {
             q: "Quelle commande permet de fusionner une branche dans la branche actuelle ?",
@@ -886,7 +888,7 @@ const QUIZZES = [
             explain: "Les branches hotfix sont utilisées pour corriger rapidement en production."
           },
           {
-            q: "Que signifie le marqueur <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> lors d’un conflit ?",
+            q: "Que signifie le marqueur <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> lors d'un conflit ?",
             choices: [
               "Fin du conflit",
               "Début de votre version",
@@ -913,11 +915,8 @@ const QUIZZES = [
             image: "schema-branches.png",
             choices: [
               "<code>git switch release<br>git merge develop<br>git switch develop<br>git merge release<br>git merge main<br></code>",
-              
               "<code>git push<br>git switch release<br>git merge main<br>git switch develop<br>git merge main</code>",
-              
               "<code>git push<br>git switch main<br>git merge release<br>git switch develop<br>git merge release</code>",
-              
               "Ho tu m'emerdes Erwan, moi je veux passer au TP"
             ],
             answer: 2,
@@ -926,6 +925,7 @@ const QUIZZES = [
         ]
       }
     ];
+
 /* ===================================================================
    MOTEUR DU QUIZ — ne pas modifier sauf si vous savez ce que vous faites
 =================================================================== */
