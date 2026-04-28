@@ -38,9 +38,43 @@
               "Un langage de programmation orienté objet"
             ],
             answer: 1,
-            explain: "Git est un outil <em>local</em> de gestion de versions. Il suit et gère l'évolution de vos fichiers au fil du temps. GitHub, Gitea, etc. sont des plateformes distantes distinctes."
+            explain: "Git est un outil <em>local</em> de gestion de versions."
+          },
+          
+          {
+            q: "À quel problème git est-il sensé répondre ?",
+            choices: [
+              "Éviter d'avoir 15 fichiers du style <code>mon_script_v2_final_pour_de_vrai_final.sh</code>",
+              "Avoir une seule source de vérité pour les scripts et tous autres fichiers",
+              "Partager et collaborer facilement sur l'écriture d efichiers",
+              "A, B et C et donc D"
+            ],
+            answer: 3,
+            explain: "Et oui, git ça fait tout ça, et c'est génial."
           },
           {
+            q: "Quelle est la différence entre Git et Gitea ?",
+            choices: [
+              "Ça n'a absolument rrrrrrien à voir",
+              "Git est gratuit, Gitea est la version payante",
+              "Gitea offre des commandes plus poussées que Git (idéal pour la gestion de prod)",
+              "Git est un outil local en ligne de commande, Gitea est un service d'ébergement adapté à git"
+            ],
+            answer: 3,
+            explain: "Git est un outil <em>local</em> de gestion de versions. Il suit et gère l'évolution de vos fichiers au fil du temps. GitHub, Gitea, etc. sont des plateformes distantes distinctes."
+          },
+
+        ]
+      },
+
+      /* ── QUIZ 2 ─────────────────────────────────────────────── */
+      {
+        id: "git-commandes",
+        title: "Quiz 2 — Commandes du quotidien",
+        desc: "add, commit, push, pull et le workflow standard.",
+        showLeaderboard: true,
+        questions: [
+            {
             q: "Que représente un <strong>commit</strong> dans Git ?",
             choices: [
               "Une sauvegarde automatique toutes les 5 minutes",
@@ -73,38 +107,6 @@
             answer: 1,
             explain: "La Staging Area permet de préparer son commit avec précision : on choisit fichier par fichier ce qui sera enregistré, et on peut réviser avant de valider."
           },
-          {
-            q: "Parmi ces noms de fichiers, lequel illustre le problème que Git est censé résoudre ?",
-            choices: [
-              "<code>README.md</code>",
-              "<code>script.sh</code>",
-              "<code>mon_script_v2_final_pour_de_vrai_final.sh</code>",
-              "<code>.gitignore</code>"
-            ],
-            answer: 2,
-            explain: "Git évite la prolifération de fichiers comme <em>v2_final_vraiment_final</em>. Avec Git, une seule version du fichier existe ; tout l'historique est accessible via les commits."
-          },
-          {
-            q: "Que garantit le <strong>hash unique</strong> associé à chaque commit ?",
-            choices: [
-              "Que le commit a bien été envoyé sur le serveur distant",
-              "Que le message du commit est correctement formaté",
-              "L'intégrité et la traçabilité : chaque commit est identifié de façon cryptographiquement unique",
-              "Que le commit a été relu et approuvé par un collègue"
-            ],
-            answer: 2,
-            explain: "Chaque commit est identifié par un hash SHA-1 unique. Cela garantit l'intégrité des données : toute modification, même minime, produirait un hash différent."
-          }
-        ]
-      },
-
-      /* ── QUIZ 2 ─────────────────────────────────────────────── */
-      {
-        id: "git-commandes",
-        title: "Quiz 2 — Commandes du quotidien",
-        desc: "add, commit, push, pull et le workflow standard.",
-        showLeaderboard: true,
-        questions: [
           {
             q: "Quelle commande permet d'ajouter <em>tous</em> les fichiers modifiés du projet à l'index ?",
             choices: [
